@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Traxión — Academia del Operador</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lima:#c8e000;--lima2:#d4f200;--oliva:#a8c000;
+  --gdk:#64748b;--gmd:#94a3b8;--glt:#cbd5e1;
+  --negro:#0f1117;--blanco:#0f1117;
+  --bg:#f8fafc;--s1:#c8e000;--s2:#ffffff;--s3:#f1f5f9;--s4:#e2e8f0;
+  --bdr:rgba(15,17,23,0.12);--bdr2:rgba(15,17,23,0.07);
+  --mu:rgba(15,17,23,0.55);--mu2:rgba(15,17,23,0.40);--mu3:rgba(15,17,23,0.08);
+  --ok:#16a34a;--warn:#d97706;--risk:#ea580c;--crit:#dc2626;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--blanco);min-height:100vh;display:flex;flex-direction:column;font-size:14px;}
+
+/* ───── GLOBAL ───── */
+.hidden{display:none!important;}
+button,input,select,textarea{font-family:'Barlow',sans-serif;}
+.btn{border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--lima);color:var(--negro);}
+.btn-primary:hover{background:var(--oliva);}
+.btn-ghost{background:transparent;border:0.5px solid rgba(255,255,255,0.16);color:var(--mu);}
+.btn-ghost:hover{color:var(--blanco);border-color:rgba(255,255,255,0.32);}
+.btn-danger{background:rgba(232,90,10,0.15);border:0.5px solid rgba(232,90,10,0.35);color:var(--crit);}
+.btn-danger:hover{background:rgba(232,90,10,0.25);}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;}
+.b-ok{background:rgba(208,223,0,0.12);color:var(--lima);}
+.b-warn{background:rgba(227,233,53,0.12);color:var(--lima2);}
+.b-risk{background:rgba(245,155,0,0.14);color:var(--risk);}
+.b-crit{background:rgba(232,90,10,0.14);color:var(--crit);}
+.b-na{background:rgba(99,102,106,0.15);color:var(--gmd);}
+.b-blue{background:rgba(59,170,255,0.12);color:#3BAAFF;}
+.prog-bar{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;}
+.f-ok{background:var(--lima);}
+.f-warn{background:var(--lima2);}
+.f-risk{background:var(--risk);}
+.f-crit{background:var(--crit);}
+.f-gray{background:var(--gmd);}
+.card{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:14px;}
+.card-p{padding:18px;}
+.sep{height:0.5px;background:rgba(255,255,255,0.06);margin:16px 0;}
+.sec-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.sec-t{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--blanco);text-transform:uppercase;letter-spacing:.5px;}
+.tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--lima);}
+
+/* ───── TOAST ───── */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--s2);border:0.5px solid rgba(208,223,0,0.3);color:var(--lima);padding:10px 20px;border-radius:9px;font-size:12px;font-weight:600;z-index:9999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;opacity:0;transition:opacity .2s;}
+#toast.show{opacity:1;}
+
+/* ───── APP SHELL ───── */
+.app{display:flex;flex-direction:column;min-height:100vh;}
+
+/* ───── TOP BAR ───── */
+.topbar{background:var(--s1);border-bottom:0.5px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;flex-shrink:0;}
+.tb-logo{display:flex;align-items:center;gap:9px;cursor:pointer;}
+.tb-mark{width:34px;height:34px;background:var(--lima);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.tb-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--blanco);letter-spacing:.5px;}
+.tb-mode{font-size:11px;background:rgba(208,223,0,0.10);border:0.5px solid var(--bdr);color:var(--lima);border-radius:5px;padding:3px 10px;font-weight:700;cursor:pointer;margin-left:8px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-notif{width:34px;height:34px;background:rgba(255,255,255,0.06);border:0.5px solid var(--bdr2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;position:relative;}
+.notif-dot{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--crit);border:1.5px solid var(--s1);}
+.tb-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--oliva),var(--lima));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--negro);cursor:pointer;}
+
+/* ───── MAIN LAYOUT ───── */
+.main-wrap{display:flex;flex:1;min-height:0;}
+
+/* ───── SIDEBAR ───── */
+.sidebar{width:210px;background:var(--s1);border-right:0.5px solid var(--bdr2);display:flex;flex-direction:column;flex-shrink:0;padding:10px 0;}
+.sn{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:var(--mu);font-size:13px;font-weight:500;border-left:2px solid transparent;transition:all .12s;}
+.sn:hover{color:var(--blanco);background:var(--bdr2);}
+.sn.on{color:var(--lima);border-left-color:var(--lima);background:rgba(208,223,0,0.06);}
+.sn-i{font-size:16px;width:20px;text-align:center;}
+.sn-badge{margin-left:auto;background:var(--crit);color:var(--blanco);border-radius:10px;padding:1px 6px;font-size:10px;font-weight:800;}
+.sidebar-sep{height:0.5px;background:var(--mu3);margin:8px 16px;}
+
+/* ───── CONTENT ───── */
+.content{flex:1;overflow-y:auto;background:var(--bg);}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--mu3);border-radius:2px;}
+.page{display:none;padding:26px 28px;max-width:1200px;}
+.page.on{display:block;}.page.on.phone-page{display:flex!important;flex-direction:column;max-width:none;padding:16px 20px;}.page.on.flex-page{display:flex!important;flex-direction:column;max-width:none;padding:0;min-height:calc(100vh - 54px);}.page.on.flex-page{display:flex!important;flex-direction:column;}
+
+/* ───── MODE BANNER ───── */
+.mode-banner{display:flex;align-items:center;gap:14px;padding:12px 20px;border-radius:12px;margin-bottom:20px;}
+.mb-op{background:linear-gradient(135deg,rgba(208,223,0,0.10),rgba(181,189,0,0.05));border:0.5px solid rgba(208,223,0,0.2);}
+.mb-hr{background:linear-gradient(135deg,rgba(59,170,255,0.08),rgba(26,95,168,0.04));border:0.5px solid rgba(59,170,255,0.18);}
+.mb-icon{font-size:30px;}
+.mb-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--blanco);}
+.mb-sub{font-size:12px;color:var(--mu);margin-top:1px;}
+
+/* ───── KPI STRIP ───── */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+.kpi{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:12px;padding:15px 16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.kpi:hover{border-color:rgba(208,223,0,0.25);}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;}
+.kpi.ok::before{background:var(--ok);}
+.kpi.warn::before{background:var(--warn);}
+.kpi.risk::before{background:var(--risk);}
+.kpi.crit::before{background:var(--crit);}
+.kpi-lbl{font-size:11px;font-weight:600;color:var(--mu2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;line-height:1;color:var(--blanco);}
+.kpi-sub{font-size:11px;color:var(--mu2);margin-top:4px;}
+
+/* ───── TABLES ───── */
+.tbl-wrap{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.tbl thead{background:var(--s3);}
+.tbl th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mu2);border-bottom:0.5px solid var(--mu3);white-space:nowrap;}
+.tbl td{padding:10px 14px;border-bottom:0.5px solid rgba(255,255,255,0.04);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(255,255,255,0.02);}
+.tbl tr.crit-r td{background:rgba(232,90,10,0.04);}
+.tbl-search{width:100%;background:var(--s3);border:0.5px solid var(--mu3);border-radius:9px;padding:9px 14px;font-size:13px;color:var(--blanco);outline:none;margin-bottom:12px;}
+.tbl-search:focus{border-color:var(--lima);}
+.tbl-search::placeholder{color:var(--mu2);}
+.row-btn{background:rgba(208,223,0,0.08);border:0.5px solid rgba(208,223,0,0.2);color:var(--lima);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.row-btn:hover{background:rgba(208,223,0,0.16);}
+
+/* ───── PROG BAR INLINE ───── */
+.pp{display:flex;align-items:center;gap:7px;}
+.pp-bar{flex:1;max-width:70px;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+.pp-pct{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;min-width:30px;}
+.pct-ok{color:var(--lima);}
+.pct-warn{color:var(--lima2);}
+.pct-risk{color:var(--risk);}
+.pct-crit{color:var(--crit);}
+.pct-gray{color:var(--gmd);}
+
+/* ───── COORD CARDS ───── */
+.coord-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:22px;}
+.cc{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.cc:hover{border-color:rgba(208,223,0,0.3);}
+.cc-hdr{background:var(--s3);padding:13px 15px;display:flex;align-items:center;gap:11px;border-bottom:0.5px solid var(--mu3);}
+.cc-av{width:40px;height:40px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;border:1.5px solid var(--bdr);}
+.cc-nm{font-size:14px;font-weight:600;color:var(--blanco);}
+.cc-sub{font-size:11px;color:var(--mu2);margin-top:1px;}
+.cc-pct{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;}
+.cc-body{padding:14px 15px;}
+.cc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px;}
+.cc-st{background:var(--s3);border-radius:7px;padding:8px 6px;text-align:center;}
+.cc-sv{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--blanco);}
+.cc-sl{font-size:9px;color:var(--mu2);margin-top:1px;text-transform:uppercase;letter-spacing:.04em;}
+.dots{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;}
+.dot{width:8px;height:8px;border-radius:50%;}
+
+/* ───── DETAIL PANEL ───── */
+.detail-panel{background:var(--s2);border:0.5px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:22px;}
+.dp-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--oliva),var(--lima));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+
+/* ───── COURSE BUILDER ───── */
+.builder-top{background:var(--s1);border-bottom:0.5px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:50px;flex-shrink:0;}
+.stepper{display:flex;align-items:center;gap:0;}
+.step{display:flex;align-items:center;gap:6px;padding:0 12px;height:50px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.step.done{border-bottom-color:var(--oliva);}
+.step.active{border-bottom-color:var(--lima);}
+.step:hover:not(.active){background:rgba(255,255,255,0.03);}
+.s-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;}
+.step.done .s-num{background:var(--oliva);color:var(--negro);}
+.step.active .s-num{background:var(--lima);color:var(--negro);}
+.step:not(.done):not(.active) .s-num{background:var(--mu3);color:var(--mu);}
+.s-lbl{font-size:11px;font-weight:600;white-space:nowrap;}
+.step.active .s-lbl{color:var(--lima);}
+.step.done .s-lbl{color:var(--oliva);}
+.step:not(.done):not(.active) .s-lbl{color:var(--mu2);}
+.s-arr{color:var(--mu3);margin:0 -2px;}
+
+.builder-body{display:flex;flex:1;min-height:0;}
+.builder-sidebar{width:250px;background:var(--s1);border-right:0.5px solid var(--bdr2);padding:14px;overflow-y:auto;flex-shrink:0;}
+.builder-sidebar::-webkit-scrollbar{width:3px;}
+.builder-sidebar::-webkit-scrollbar-thumb{background:var(--mu3);border-radius:2px;}
+.bs-hdr{font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;}
+.bs-add{width:100%;background:rgba(208,223,0,0.08);border:0.5px dashed rgba(208,223,0,0.3);color:var(--lima);border-radius:7px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:10px;}
+.bs-add:hover{background:rgba(208,223,0,0.14);}
+.mod-group{margin-bottom:5px;border:0.5px solid var(--bdr2);border-radius:8px;overflow:hidden;}
+.mod-h{display:flex;align-items:center;gap:7px;padding:8px 10px;background:var(--s2);cursor:pointer;}
+.mod-h:hover{background:var(--s3);}
+.mod-h.active{background:rgba(208,223,0,0.08);}
+.mod-num{font-size:10px;font-weight:800;color:var(--lima);min-width:16px;}
+.mod-nm{font-size:11px;font-weight:600;color:rgba(255,255,255,0.82);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.les-list{background:var(--s1);padding:2px 0;}
+.les-row{display:flex;align-items:center;gap:6px;padding:6px 10px 6px 22px;cursor:pointer;}
+.les-row:hover{background:var(--bdr2);}
+.les-row.active{background:rgba(208,223,0,0.07);border-left:2px solid var(--lima);}
+.lt{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;}
+.lt-v{background:rgba(208,223,0,0.10);color:var(--lima);}
+.lt-q{background:rgba(227,233,53,0.10);color:var(--lima2);}
+.lt-d{background:rgba(99,102,106,0.15);color:var(--gmd);}
+.lt-t{background:rgba(181,189,0,0.10);color:var(--oliva);}
+.les-nm{font-size:11px;color:var(--mu);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.les-row.active .les-nm{color:var(--lima);}
+.les-add{display:flex;align-items:center;gap:5px;padding:5px 10px 5px 22px;font-size:10px;color:var(--mu2);cursor:pointer;}
+.les-add:hover{color:var(--lima);}
+
+.builder-ed{flex:1;overflow-y:auto;padding:24px 28px;background:var(--bg);}
+.builder-ed::-webkit-scrollbar{width:4px;}
+.builder-ed::-webkit-scrollbar-thumb{background:var(--mu3);border-radius:2px;}
+.bs-pg{display:none;}
+.bs-pg.on{display:block;}
+
+/* ───── FORM CONTROLS ───── */
+.fg{margin-bottom:18px;}
+.fl{font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.fl .req{color:var(--lima);font-size:9px;}
+.fi{width:100%;background:var(--s2);border:0.5px solid rgba(255,255,255,0.12);border-radius:9px;padding:10px 12px;font-size:13px;color:var(--blanco);outline:none;transition:border-color .15s;}
+.fi:focus{border-color:var(--lima);}
+.fi::placeholder{color:var(--mu2);}
+.fi-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2397999B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px;cursor:pointer;}
+.fi-ta{resize:vertical;min-height:80px;line-height:1.6;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.ai-btn{display:inline-flex;align-items:center;gap:4px;background:rgba(208,223,0,0.08);border:0.5px solid rgba(208,223,0,0.2);color:var(--lima);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer;margin-top:7px;}
+.ai-btn:hover{background:rgba(208,223,0,0.16);}
+
+/* ───── TOGGLE ───── */
+.tog{width:36px;height:20px;background:rgba(255,255,255,0.12);border-radius:10px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--lima);}
+.tok{width:14px;height:14px;background:var(--blanco);border-radius:50%;position:absolute;top:3px;left:3px;transition:transform .2s;}
+.tog.on .tok{transform:translateX(16px);}
+
+/* ───── RADIO CARD ───── */
+.rg{display:grid;gap:9px;}
+.rc{background:var(--s2);border:0.5px solid rgba(255,255,255,0.09);border-radius:9px;padding:12px;cursor:pointer;transition:all .15s;}
+.rc:hover{border-color:rgba(208,223,0,0.28);}
+.rc.sel{border-color:var(--lima);background:rgba(208,223,0,0.06);}
+.rc-i{font-size:20px;margin-bottom:5px;}
+.rc-n{font-size:12px;font-weight:700;color:var(--blanco);margin-bottom:2px;}
+.rc-s{font-size:10px;color:var(--mu2);line-height:1.4;}
+.rc-chk{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);margin-top:4px;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.rc.sel .rc-chk{background:var(--lima);border-color:var(--lima);color:var(--negro);}
+
+/* ───── LESSON EDITOR ───── */
+.les-ed{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+.le-hdr{display:flex;align-items:center;gap:8px;padding:10px 13px;background:var(--s3);cursor:pointer;border-bottom:0.5px solid var(--mu3);}
+.le-hdr:hover{background:var(--s4);}
+.le-body{display:none;padding:14px 13px;}
+.le-body.open{display:block;}
+.vid-zone{background:var(--s3);border:1.5px dashed rgba(208,223,0,0.2);border-radius:9px;cursor:pointer;overflow:hidden;transition:border-color .15s;}
+.vid-zone:hover{border-color:rgba(208,223,0,0.4);}
+.vid-player{background:#000;height:120px;display:flex;align-items:center;justify-content:center;position:relative;}
+.vid-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:60px;opacity:.1;}
+.vid-play{width:44px;height:44px;background:var(--lima);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--negro);position:relative;z-index:1;}
+.vid-prog{height:3px;background:rgba(255,255,255,0.1);}
+.vid-pf{height:100%;width:38%;background:var(--lima);}
+.vid-inf{display:flex;justify-content:space-between;font-size:10px;color:var(--mu2);padding:6px 10px;}
+.quiz-q{background:var(--s3);border:0.5px solid var(--mu3);border-radius:9px;padding:12px;margin-bottom:8px;}
+.qq-n{font-size:10px;font-weight:700;color:var(--lima);margin-bottom:5px;}
+.qq-t{font-size:12px;font-weight:600;color:var(--blanco);margin-bottom:7px;}
+.q-opt{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--s2);border:0.5px solid var(--mu3);border-radius:6px;margin-bottom:5px;cursor:pointer;transition:all .15s;}
+.q-opt:hover{border-color:rgba(208,223,0,0.25);}
+.q-opt.ok{border-color:rgba(208,223,0,0.35);background:rgba(208,223,0,0.07);}
+.q-let{width:20px;height:20px;border-radius:4px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--mu);flex-shrink:0;}
+.q-opt.ok .q-let{background:var(--lima);color:var(--negro);}
+.q-txt{font-size:11px;color:rgba(255,255,255,0.75);}
+.add-q-btn{width:100%;background:transparent;border:0.5px dashed rgba(208,223,0,0.22);color:var(--lima2);border-radius:7px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;}
+.add-q-btn:hover{background:rgba(208,223,0,0.05);}
+
+/* ───── SETTINGS ROW ───── */
+.sr{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--mu3);}
+.sr:last-child{border-bottom:none;}
+.sr-n{font-size:13px;font-weight:500;color:rgba(255,255,255,0.88);}
+.sr-d{font-size:11px;color:var(--mu2);margin-top:1px;}
+
+/* ───── AUDIENCE ───── */
+.aud-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px;}
+.ac{background:var(--s2);border:0.5px solid rgba(255,255,255,0.09);border-radius:9px;padding:11px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:9px;}
+.ac:hover{border-color:rgba(208,223,0,0.28);}
+.ac.sel{border-color:var(--lima);background:rgba(208,223,0,0.06);}
+.ac-chk{width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(255,255,255,0.2);margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.ac.sel .ac-chk{background:var(--lima);border-color:var(--lima);color:var(--negro);}
+
+/* ───── REVIEW ───── */
+.rv-card{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:11px;padding:15px;margin-bottom:12px;}
+.rv-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--mu3);}
+.rv-row:last-child{border-bottom:none;}
+.rv-k{font-size:11px;color:var(--mu2);min-width:120px;}
+.rv-v{font-size:12px;color:rgba(255,255,255,0.88);font-weight:500;}
+
+/* ───── PUBLISH BANNER ───── */
+.pub-bn{background:linear-gradient(135deg,rgba(208,223,0,0.09),rgba(181,189,0,0.05));border:0.5px solid rgba(208,223,0,0.22);border-radius:13px;padding:22px;text-align:center;margin-bottom:20px;}
+.pub-i{font-size:44px;margin-bottom:10px;}
+.pub-t{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:5px;}
+.pub-s{font-size:12px;color:var(--mu);line-height:1.6;}
+
+/* ───── OPERATOR MOBILE VIEW ───── */
+.phone-wrap{display:flex;justify-content:center;align-items:flex-start;padding:10px;}
+.phone{width:360px;background:var(--bg);border-radius:32px;overflow:hidden;border:6px solid #222;box-shadow:0 20px 60px rgba(0,0,0,0.5);min-height:680px;display:flex;flex-direction:column;}
+.ph-status{display:flex;justify-content:space-between;padding:10px 16px 4px;font-size:11px;font-weight:700;color:var(--mu);background:var(--bg);flex-shrink:0;}
+.ph-screen{flex:1;overflow-y:auto;scrollbar-width:none;}
+.ph-screen::-webkit-scrollbar{display:none;}
+.ph-pg{display:none;flex-direction:column;min-height:100%;}
+.ph-pg.on{display:flex;}
+.ph-bnav{background:rgba(10,10,8,0.97);border-top:0.5px solid rgba(208,223,0,0.09);padding:8px 0 12px;flex-shrink:0;display:flex;}
+.ph-nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:transparent;padding:4px;}
+.ph-nbi{font-size:18px;}
+.ph-nbl{font-size:9px;font-weight:600;color:rgba(255,255,255,0.28);}
+.ph-nb.on .ph-nbl{color:var(--lima);}
+.ph-hdr{background:radial-gradient(ellipse 100% 100% at 50% -15%,rgba(208,223,0,0.12) 0%,transparent 60%);padding:13px 18px 16px;}
+.ph-hdr-r{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.ph-greet{font-size:12px;color:var(--mu2);margin-bottom:2px;}
+.ph-name{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);}
+.ph-bell{width:36px;height:36px;background:rgba(208,223,0,0.08);border:0.5px solid var(--bdr2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;}
+.lvl-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(208,223,0,0.10);border:0.5px solid rgba(208,223,0,0.28);border-radius:20px;padding:5px 11px;margin-bottom:12px;}
+.lvl-t{font-size:11px;font-weight:700;color:var(--lima);}
+.lvl-s{font-size:10px;color:var(--gmd);}
+.ph-lec{background:var(--s3);border:0.5px solid rgba(208,223,0,0.22);border-radius:16px;padding:14px;margin-bottom:14px;cursor:pointer;position:relative;overflow:hidden;}
+.ph-lec::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--oliva),var(--lima));}
+.ph-lec-tag{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lima);display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.ph-dot{width:5px;height:5px;border-radius:50%;background:var(--lima);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ph-lec-t{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--blanco);line-height:1.15;margin-bottom:8px;}
+.ph-lec-m{display:flex;gap:10px;margin-bottom:10px;font-size:11px;color:var(--mu);}
+.ph-streak{display:flex;align-items:center;gap:10px;background:rgba(208,223,0,0.06);border:0.5px solid rgba(208,223,0,0.14);border-radius:12px;padding:10px 13px;margin-bottom:14px;}
+.ph-streak-n{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--lima);line-height:1;}
+.ph-streak-l{font-size:11px;color:var(--mu2);margin-top:1px;}
+.ph-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.ph-qc{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:12px;padding:12px 10px;cursor:pointer;}
+.ph-qce{font-size:22px;margin-bottom:6px;display:block;}
+.ph-qcn{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);margin-bottom:5px;line-height:1.3;}
+.ph-mb{height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
+.ph-mf{height:100%;border-radius:2px;}
+.ph-ml{font-size:9px;color:var(--mu2);margin-top:3px;}
+.ph-btn{width:100%;background:var(--lima);color:var(--negro);border:none;border-radius:10px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:background .15s;}
+.ph-btn:active{background:var(--oliva);}
+.ph-btn-ghost{width:100%;background:rgba(208,223,0,0.07);border:0.5px solid rgba(208,223,0,0.22);color:var(--lima);border-radius:10px;padding:10px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
+.vfab{position:absolute;bottom:75px;right:14px;width:46px;height:46px;background:var(--lima);border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:20;box-shadow:0 6px 22px rgba(208,223,0,0.35);animation:fl 3s ease-in-out infinite;color:var(--negro);}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ph-content{padding:14px 18px;flex:1;}
+
+/* ───── LESSON SCREEN MOBILE ───── */
+.ph-vid{height:180px;background:#000;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+.ph-vid-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:70px;opacity:.10;}
+.ph-vid-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 55%);}
+.ph-vid-pl{width:56px;height:56px;background:var(--lima);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--negro);position:relative;z-index:1;border:none;cursor:pointer;}
+.ph-vid-pbar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.1);z-index:2;}
+.ph-vid-ppf{height:100%;width:38%;background:var(--lima);}
+.steps-row{display:flex;gap:3px;margin-bottom:14px;}
+.sd{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,0.10);}
+.sd.done{background:var(--oliva);}
+.sd.cur{background:var(--lima);}
+.kcard{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:12px;padding:13px;margin-bottom:10px;}
+.kcard-t{font-size:10px;font-weight:700;color:var(--lima);text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px;}
+.kp{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.kn{min-width:22px;height:22px;background:rgba(208,223,0,0.12);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--lima);flex-shrink:0;}
+.kt{font-size:12px;color:rgba(255,255,255,0.75);line-height:1.5;}
+.kt strong{color:var(--lima);}
+.ph-opt{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:11px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.ph-opt:hover{background:rgba(255,255,255,0.05);}
+.ph-opt.ok{border-color:var(--lima);background:rgba(208,223,0,0.10);}
+.ph-opt.no{border-color:var(--gdk);background:rgba(99,102,106,0.10);}
+.ph-ol{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:var(--gmd);flex-shrink:0;}
+.ph-opt.ok .ph-ol{background:var(--lima);color:var(--negro);}
+.ph-ot{font-size:13px;color:rgba(255,255,255,0.82);line-height:1.3;}
+.res-screen{display:none;flex-direction:column;align-items:center;padding:24px 18px;text-align:center;}
+.res-screen.on{display:flex;}
+.res-e{font-size:56px;margin-bottom:12px;}
+.res-t{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--blanco);margin-bottom:7px;}
+.res-s{font-size:12px;color:var(--mu);margin-bottom:18px;line-height:1.6;}
+.pts-box{background:rgba(208,223,0,0.10);border:0.5px solid rgba(208,223,0,0.28);border-radius:14px;padding:18px 30px;margin-bottom:18px;}
+.pts-big{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;color:var(--lima);line-height:1;}
+.pts-lbl{font-size:11px;color:var(--mu2);margin-top:3px;}
+
+/* ───── RANKING ───── */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:14px;padding:16px 20px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(208,223,0,0.07) 0%,transparent 70%);}
+.pi{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.pav{border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid transparent;}
+.pi:nth-child(1) .pav{width:50px;height:50px;background:rgba(151,153,155,0.14);border-color:var(--gmd);}
+.pi:nth-child(2) .pav{width:62px;height:62px;background:rgba(208,223,0,0.12);border-color:var(--lima);}
+.pi:nth-child(3) .pav{width:46px;height:46px;background:rgba(99,102,106,0.14);border-color:var(--gdk);}
+.pn{font-size:10px;font-weight:600;color:var(--mu);text-align:center;max-width:65px;}
+.pp2{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;}
+.pi:nth-child(2) .pp2{color:var(--lima);}
+.pi:nth-child(1) .pp2,.pi:nth-child(3) .pp2{color:var(--gmd);}
+.rr{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:0.5px solid rgba(255,255,255,0.05);}
+.rr.me{background:rgba(208,223,0,0.07);border-radius:10px;padding:10px 12px;border-bottom:none;margin:4px 16px;}
+.rr-n{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:rgba(255,255,255,0.2);min-width:20px;text-align:center;}
+.rr.me .rr-n{color:var(--lima);}
+.rr-av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:16px;}
+.rr-info{flex:1;}
+.rr-nm{font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);}
+.rr.me .rr-nm{color:var(--blanco);}
+.rr-dp{font-size:10px;color:var(--mu2);}
+.rr-pts{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--lima);}
+
+/* ───── PROFILE ───── */
+.pf-hdr{background:radial-gradient(ellipse 80% 70% at 50% -10%,rgba(208,223,0,0.13) 0%,transparent 60%);padding:18px 18px 16px;text-align:center;}
+.pf-av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--oliva),var(--lima));display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:28px;}
+.pf-n{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:800;color:var(--blanco);}
+.pf-r{font-size:12px;color:var(--gmd);margin-top:2px;}
+.pf-d{font-size:11px;color:var(--lima);font-weight:700;margin-top:4px;}
+.ph-stats{display:flex;gap:1px;background:rgba(255,255,255,0.05);border-radius:12px;margin:12px 16px;overflow:hidden;}
+.ph-stat{flex:1;padding:11px 4px;text-align:center;background:var(--s2);}
+.ph-sv{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--blanco);}
+.ph-sk{font-size:9px;color:var(--mu2);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;}
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.bi{background:var(--s2);border-radius:10px;padding:10px 5px;text-align:center;border:0.5px solid var(--bdr2);}
+.bi-i{font-size:20px;margin-bottom:3px;display:block;}
+.bi-n{font-size:9px;color:var(--mu2);line-height:1.3;}
+.bi.locked{opacity:.3;}
+.cert-row{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:10px;padding:11px;display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.cert-i{font-size:20px;flex-shrink:0;}
+.cert-n{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:1px;}
+.cert-d{font-size:10px;color:var(--mu2);}
+.cert-s{margin-left:auto;font-size:10px;font-weight:700;}
+.cert-s.v{color:var(--lima);}
+.cert-s.w{color:var(--lima2);}
+
+/* ───── REWARDS ───── */
+.rw-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.rw-card{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:12px;padding:13px;cursor:pointer;transition:border-color .15s;}
+.rw-card:hover{border-color:rgba(208,223,0,0.3);}
+.rw-e{font-size:26px;margin-bottom:7px;display:block;}
+.rw-n{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:3px;line-height:1.3;}
+.rw-pts{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--lima);}
+.rw-s{font-size:10px;color:var(--mu2);margin-top:2px;}
+
+/* ───── CHECKLIST ───── */
+.ck-item{background:var(--s2);border:0.5px solid var(--bdr2);border-radius:11px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s;}
+.ck-item:hover{border-color:rgba(208,223,0,0.2);}
+.ck-item.chk{border-color:rgba(208,223,0,0.35);background:rgba(208,223,0,0.05);}
+.ck-box{width:26px;height:26px;border-radius:6px;border:1.5px solid rgba(208,223,0,0.3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;}
+.ck-item.chk .ck-box{background:var(--lima);border-color:var(--lima);}
+.ck-e{font-size:20px;flex-shrink:0;}
+.ck-t{font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.3;}
+.ck-s{font-size:10px;color:var(--mu2);margin-top:2px;}
+.ck-section-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lima);padding:8px 18px 4px;margin-top:4px;}
+
+/* ───── MODAL ───── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;}
+.modal{background:var(--s2);border:0.5px solid var(--bdr);border-radius:16px;padding:24px;width:460px;max-width:94vw;max-height:90vh;overflow-y:auto;}
+.modal-t{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--blanco);margin-bottom:4px;}
+.modal-s{font-size:12px;color:var(--mu);margin-bottom:16px;line-height:1.5;}
+.modal-ft{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.lesson-type-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:16px;}
+.ltc{background:var(--s3);border:0.5px solid var(--mu3);border-radius:9px;padding:12px;cursor:pointer;text-align:center;transition:all .15s;}
+.ltc:hover{border-color:rgba(208,223,0,0.28);}
+.ltc.sel{border-color:var(--lima);background:rgba(208,223,0,0.07);}
+.ltc-i{font-size:22px;margin-bottom:5px;}
+.ltc-n{font-size:12px;font-weight:700;color:var(--blanco);}
+.ltc-d{font-size:10px;color:var(--mu2);margin-top:2px;line-height:1.4;}
+
+/* ───── SUCCESS ───── */
+.success-wrap{display:none;padding:48px 24px;text-align:center;max-width:440px;margin:0 auto;}
+.success-wrap.on{display:block;}
+.sw-i{font-size:64px;margin-bottom:14px;}
+.sw-t{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;color:var(--blanco);margin-bottom:8px;}
+.sw-s{font-size:13px;color:var(--mu);line-height:1.7;margin-bottom:22px;}
+.sw-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
+.sw-st{background:var(--s2);border-radius:9px;padding:12px;border:0.5px solid var(--bdr2);}
+.sw-sv{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:800;color:var(--lima);}
+.sw-sl{font-size:10px;color:var(--mu2);margin-top:2px;}
+
+/* ───── INNER TABS ───── */
+.itabs{display:flex;border-bottom:0.5px solid rgba(255,255,255,0.07);margin-bottom:16px;}
+.itab{flex:1;text-align:center;padding:8px 4px;font-size:12px;font-weight:600;color:var(--gmd);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.itab.on{color:var(--lima);border-bottom-color:var(--lima);}
+
+/* ───── NOTIF PANEL ───── */
+.notif-panel{background:var(--s2);border:0.5px solid var(--bdr);border-radius:14px;padding:0;overflow:hidden;margin-bottom:20px;}
+.notif-item{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-bottom:0.5px solid rgba(255,255,255,0.04);cursor:pointer;transition:background .12s;}
+.notif-item:hover{background:rgba(255,255,255,0.02);}
+.notif-item:last-child{border-bottom:none;}
+.notif-dot2{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.notif-title{font-size:13px;font-weight:600;color:rgba(255,255,255,0.88);}
+.notif-sub{font-size:11px;color:var(--mu2);margin-top:2px;line-height:1.5;}
+.notif-time{font-size:10px;color:var(--mu3);margin-top:3px;}
+
+/* ───── RESPONSIVE ───── */
+@media(max-width:900px){
+  .sidebar{width:52px;}
+  .sn span:not(.sn-i){display:none;}
+  .sn{justify-content:center;padding:10px;}
+  .sn-badge{display:none;}
+  .kpi-strip{grid-template-columns:1fr 1fr;}
+  .page{padding:16px;}
+}
+</style>
+<link rel="stylesheet" href="./assets/css/nexo-theme.css">
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL -->
+<div class="modal-bg hidden" id="modal-bg">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<div class="app" id="app">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-logo" onclick="navTo('dashboard')">
+    <div class="tb-mark">🚌</div>
+    <div class="tb-name">TRAXIÓN</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="tb-mode" id="mode-toggle" onclick="switchMode()">👔 Vista RRHH</div>
+    <div style="font-size:12px;color:var(--mu2)" id="mode-label">Gerente: Erika Vargas</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-notif" onclick="navTo('notificaciones')">🔔<div class="notif-dot"></div></div>
+    <div class="tb-av" onclick="navTo('perfil-hr')">EV</div>
+  </div>
+</div>
+
+<!-- MAIN WRAP -->
+<div class="main-wrap">
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sn on" id="sn-dashboard" onclick="navTo('dashboard')"><span class="sn-i">📊</span><span>Dashboard</span></div>
+  <div class="sn" id="sn-org" onclick="navTo('org')"><span class="sn-i">🏢</span><span>Organigrama</span></div>
+  <div class="sn" id="sn-operadores" onclick="navTo('operadores')"><span class="sn-i">🚌</span><span>Operadores</span></div>
+  <div class="sn" id="sn-capacitaciones" onclick="navTo('capacitaciones')"><span class="sn-i">📚</span><span>Capacitaciones</span></div>
+  <div class="sn" id="sn-crear" onclick="navTo('crear')"><span class="sn-i">✏️</span><span>Crear curso</span></div>
+  <div class="sn" id="sn-alertas" onclick="navTo('alertas')"><span class="sn-i">🔔</span><span>Alertas</span><span class="sn-badge">18</span></div>
+  <div class="sidebar-sep"></div>
+  <div class="sn" id="sn-app-operador" onclick="navTo('app-operador')"><span class="sn-i">📱</span><span>App operador</span></div>
+</nav>
+
+<!-- CONTENT -->
+<div class="content" id="content">
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div class="page on" id="p-dashboard">
+  <div class="mode-banner mb-hr">
+    <div class="mb-icon">📊</div>
+    <div>
+      <div class="mb-title">Dashboard General — Región Norte</div>
+      <div class="mb-sub">Q2 2025 · 4 coordinadores · 422 operadores activos</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="showToast('📥 Exportando reporte a Excel...')">⬇ Exportar</button>
+      <button class="btn btn-primary" onclick="navTo('crear')">+ Nueva capacitación</button>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi ok" onclick="navTo('operadores')">
+      <div class="kpi-lbl">Cumplimiento general</div>
+      <div class="kpi-val">74<span style="font-size:16px;">%</span></div>
+      <div class="kpi-sub">Meta Q2: 95% · ▼ 21 pts bajo meta</div>
+    </div>
+    <div class="kpi warn" onclick="navTo('operadores')">
+      <div class="kpi-lbl">Al corriente</div>
+      <div class="kpi-val">312<span style="font-size:16px;">/422</span></div>
+      <div class="kpi-sub">110 con pendientes</div>
+    </div>
+    <div class="kpi risk" onclick="navTo('alertas')">
+      <div class="kpi-lbl">Vencen &lt; 30 días</div>
+      <div class="kpi-val">47</div>
+      <div class="kpi-sub">18 críticos en &lt; 7 días</div>
+    </div>
+    <div class="kpi crit" onclick="navTo('operadores')">
+      <div class="kpi-lbl">Sin iniciar ningún módulo</div>
+      <div class="kpi-val">23</div>
+      <div class="kpi-sub">Acción inmediata requerida</div>
+    </div>
+  </div>
+  <div class="sec-h">
+    <div class="sec-t">📊 Cumplimiento por coordinador</div>
+    <button class="btn btn-ghost" onclick="navTo('org')">Ver organigrama →</button>
+  </div>
+  <div class="coord-grid">
+    <div class="cc" onclick="drillCoord('MTY Norte')">
+      <div class="cc-hdr"><div class="cc-av">👨</div><div><div class="cc-nm">Ricardo Salinas</div><div class="cc-sub">Depósito MTY Norte</div></div><div class="cc-pct pct-ok">89%</div></div>
+      <div class="cc-body">
+        <div class="cc-stats"><div class="cc-st"><div class="cc-sv">112</div><div class="cc-sl">Operadores</div></div><div class="cc-st"><div class="cc-sv" style="color:var(--lima)">99</div><div class="cc-sl">Al corriente</div></div><div class="cc-st"><div class="cc-sv" style="color:var(--risk)">13</div><div class="cc-sl">Pendientes</div></div></div>
+        <div class="prog-bar"><div class="prog-fill f-ok" style="width:89%"></div></div>
+        <div class="dots" style="margin-top:8px;"><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima2)"></div><div class="dot" style="background:var(--lima2)"></div><div class="dot" style="background:var(--risk)"></div><div class="dot" style="background:var(--crit)"></div><span style="font-size:10px;color:var(--mu2)">+104 más</span></div>
+      </div>
+    </div>
+    <div class="cc" onclick="drillCoord('MTY Sur')">
+      <div class="cc-hdr"><div class="cc-av">👩</div><div><div class="cc-nm">Mariana López</div><div class="cc-sub">Depósito MTY Sur</div></div><div class="cc-pct pct-warn">71%</div></div>
+      <div class="cc-body">
+        <div class="cc-stats"><div class="cc-st"><div class="cc-sv">98</div><div class="cc-sl">Operadores</div></div><div class="cc-st"><div class="cc-sv" style="color:var(--lima2)">70</div><div class="cc-sl">Al corriente</div></div><div class="cc-st"><div class="cc-sv" style="color:var(--crit)">28</div><div class="cc-sl">Pendientes</div></div></div>
+        <div class="prog-bar"><div class="prog-fill f-warn" style="width:71%"></div></div>
+        <div class="dots" style="margin-top:8px;"><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima2)"></div><div class="dot" style="background:var(--lima2)"></div><div class="dot" style="background:var(--risk)"></div><div class="dot" style="background:var(--risk)"></div><div class="dot" style="background:var(--crit)"></div><div class="dot" style="background:var(--crit)"></div><div class="dot" style="background:var(--gdk)"></div><span style="font-size:10px;color:var(--mu2)">+90 más</span></div>
+      </div>
+    </div>
+    <div class="cc" onclick="drillCoord('GDL Oriente')">
+      <div class="cc-hdr"><div class="cc-av">👨</div><div><div class="cc-nm">Fernando Cruz</div><div class="cc-sub">Depósito GDL Oriente</div></div><div class="cc-pct pct-risk">62%</div></div>
+      <div class="cc-body">
+        <div class="cc-stats"><div class="cc-st"><div class="cc-sv">124</div><div class="cc-sl">Operadores</div></div><div class="cc-st"><div class="cc-sv" style="color:var(--risk)">77</div><div class="cc-sl">Al corriente</div></div><div class="cc-st"><div class="cc-sv" style="color:var(--crit)">47</div><div class="cc-sl">Pendientes</div></div></div>
+        <div class="prog-bar"><div class="prog-fill f-risk" style="width:62%"></div></div>
+        <div class="dots" style="margin-top:8px;"><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--risk)"></div><div class="dot" style="background:var(--risk)"></div><div class="dot" style="background:var(--crit)"></div><div class="dot" style="background:var(--crit)"></div><div class="dot" style="background:var(--crit)"></div><div class="dot" style="background:var(--gdk)"></div><div class="dot" style="background:var(--gdk)"></div><span style="font-size:10px;color:var(--mu2)">+116 más</span></div>
+      </div>
+    </div>
+    <div class="cc" onclick="drillCoord('GDL Poniente')">
+      <div class="cc-hdr"><div class="cc-av">👩</div><div><div class="cc-nm">Sofía Herrera</div><div class="cc-sub">Depósito GDL Poniente</div></div><div class="cc-pct pct-ok">83%</div></div>
+      <div class="cc-body">
+        <div class="cc-stats"><div class="cc-st"><div class="cc-sv">88</div><div class="cc-sl">Operadores</div></div><div class="cc-st"><div class="cc-sv" style="color:var(--lima)">73</div><div class="cc-sl">Al corriente</div></div><div class="cc-st"><div class="cc-sv" style="color:var(--lima2)">15</div><div class="cc-sl">Pendientes</div></div></div>
+        <div class="prog-bar"><div class="prog-fill f-ok" style="width:83%"></div></div>
+        <div class="dots" style="margin-top:8px;"><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima2)"></div><div class="dot" style="background:var(--risk)"></div><div class="dot" style="background:var(--crit)"></div><div class="dot" style="background:var(--lima)"></div><div class="dot" style="background:var(--lima)"></div><span style="font-size:10px;color:var(--mu2)">+80 más</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="sec-h"><div class="sec-t">🚨 Vencimientos críticos — próximos 7 días</div><button class="btn btn-ghost" onclick="navTo('alertas')">Ver todas →</button></div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Operador</th><th>Coordinador</th><th>Capacitación pendiente</th><th>Avance</th><th>Vence</th><th>Acciones</th></tr></thead>
+      <tbody>
+        <tr class="crit-r"><td><b style="color:var(--blanco)">Jorge Ramírez</b><br><span style="font-size:11px;color:var(--mu2)">#04821 · MTY Sur</span></td><td style="color:var(--mu)">M. López</td><td>Manejo defensivo — Intermedio</td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-crit" style="width:20%"></div></div><span class="pp-pct pct-crit">20%</span></div></td><td><span class="badge b-crit">⚠ 3 días</span></td><td><button class="row-btn" onclick="showOpDetail('Jorge Ramírez','#04821','MTY Sur','M. López')">Ver →</button></td></tr>
+        <tr class="crit-r"><td><b style="color:var(--blanco)">Luis Aguirre</b><br><span style="font-size:11px;color:var(--mu2)">#03317 · MTY Sur</span></td><td style="color:var(--mu)">M. López</td><td>NOM-087 Seguridad vial</td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-crit" style="width:0%"></div></div><span class="pp-pct pct-crit">0%</span></div></td><td><span class="badge b-crit">⚠ 4 días</span></td><td><button class="row-btn" onclick="showOpDetail('Luis Aguirre','#03317','MTY Sur','M. López')">Ver →</button></td></tr>
+        <tr class="crit-r"><td><b style="color:var(--blanco)">Alejandro Vega</b><br><span style="font-size:11px;color:var(--mu2)">#07724 · GDL Ote</span></td><td style="color:var(--mu)">F. Cruz</td><td>Actuación ante accidente</td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-crit" style="width:35%"></div></div><span class="pp-pct pct-crit">35%</span></div></td><td><span class="badge b-crit">⚠ 5 días</span></td><td><button class="row-btn" onclick="showOpDetail('Alejandro Vega','#07724','GDL Oriente','F. Cruz')">Ver →</button></td></tr>
+        <tr><td><b style="color:var(--blanco)">Carmen Delgado</b><br><span style="font-size:11px;color:var(--mu2)">#02209 · GDL Ote</span></td><td style="color:var(--mu)">F. Cruz</td><td>Revisión preoperacional</td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-risk" style="width:55%"></div></div><span class="pp-pct pct-risk">55%</span></div></td><td><span class="badge b-risk">6 días</span></td><td><button class="row-btn" onclick="showOpDetail('Carmen Delgado','#02209','GDL Oriente','F. Cruz')">Ver →</button></td></tr>
+        <tr><td><b style="color:var(--blanco)">Martín Soto</b><br><span style="font-size:11px;color:var(--mu2)">#05530 · GDL Pon</span></td><td style="color:var(--mu)">S. Herrera</td><td>Conducción nocturna</td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-risk" style="width:60%"></div></div><span class="pp-pct pct-risk">60%</span></div></td><td><span class="badge b-risk">7 días</span></td><td><button class="row-btn" onclick="showOpDetail('Martín Soto','#05530','GDL Poniente','S. Herrera')">Ver →</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ ORGANIGRAMA ═══════════════ -->
+<div class="page" id="p-org">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div><div class="tag">Estructura organizacional</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--blanco);margin-top:3px;">Región Norte — Gerente: Erika Vargas</div></div>
+    <button class="btn btn-primary" onclick="navTo('crear')">+ Asignar capacitación masiva</button>
+  </div>
+  <div class="card card-p" style="margin-bottom:20px;overflow-x:auto;">
+    <div style="min-width:700px;">
+      <div style="text-align:center;margin-bottom:0;">
+        <div style="display:inline-block;background:var(--s3);border:1.5px solid var(--lima);border-radius:11px;padding:12px 20px;text-align:center;">
+          <div class="tag">Gerente Regional</div>
+          <div style="font-size:15px;font-weight:700;color:var(--blanco);margin-top:2px;">Erika Vargas</div>
+          <div style="font-size:11px;color:var(--mu2);">4 coordinadores · 422 operadores</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--lima);">74%</div>
+        </div>
+        <div style="width:2px;height:24px;background:var(--mu3);margin:0 auto;"></div>
+        <div style="height:1.5px;width:75%;background:var(--mu3);margin:0 auto;"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:0;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:1.5px;height:18px;background:var(--mu3);"></div>
+          <div class="cc" style="width:100%;" onclick="drillCoord('MTY Norte')"><div class="cc-hdr"><div class="cc-av" style="font-size:15px;">👨</div><div><div class="cc-nm" style="font-size:12px;">Ricardo Salinas</div><div class="cc-sub">MTY Norte · 112 ops.</div></div><div class="cc-pct pct-ok" style="font-size:18px;">89%</div></div><div class="cc-body"><div class="prog-bar"><div class="prog-fill f-ok" style="width:89%"></div></div></div></div>
+          <div style="width:1.5px;height:14px;background:var(--mu3);"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;">
+            <div style="background:var(--s3);border:0.5px solid var(--bdr2);border-radius:7px;padding:7px 6px;text-align:center;"><div style="font-size:10px;color:var(--mu2);">Mat.</div><div style="font-size:12px;font-weight:700;color:var(--blanco);">56 ops.</div><div style="font-size:13px;font-weight:800;color:var(--lima);">91%</div></div>
+            <div style="background:var(--s3);border:0.5px solid var(--bdr2);border-radius:7px;padding:7px 6px;text-align:center;"><div style="font-size:10px;color:var(--mu2);">Ves.</div><div style="font-size:12px;font-weight:700;color:var(--blanco);">56 ops.</div><div style="font-size:13px;font-weight:800;color:var(--lima2);">87%</div></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:1.5px;height:18px;background:var(--mu3);"></div>
+          <div class="cc" style="width:100%;" onclick="drillCoord('MTY Sur')"><div class="cc-hdr"><div class="cc-av" style="font-size:15px;">👩</div><div><div class="cc-nm" style="font-size:12px;">Mariana López</div><div class="cc-sub">MTY Sur · 98 ops.</div></div><div class="cc-pct pct-warn" style="font-size:18px;">71%</div></div><div class="cc-body"><div class="prog-bar"><div class="prog-fill f-warn" style="width:71%"></div></div></div></div>
+          <div style="width:1.5px;height:14px;background:var(--mu3);"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;">
+            <div style="background:var(--s3);border:0.5px solid var(--bdr2);border-radius:7px;padding:7px 6px;text-align:center;"><div style="font-size:10px;color:var(--mu2);">Mat.</div><div style="font-size:12px;font-weight:700;color:var(--blanco);">49 ops.</div><div style="font-size:13px;font-weight:800;color:var(--lima2);">74%</div></div>
+            <div style="background:var(--s3);border:0.5px solid var(--bdr2);border-radius:7px;padding:7px 6px;text-align:center;"><div style="font-size:10px;color:var(--mu2);">Ves.</div><div style="font-size:12px;font-weight:700;color:var(--blanco);">49 ops.</div><div style="font-size:13px;font-weight:800;color:var(--risk);">68%</div></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:1.5px;height:18px;background:var(--mu3);"></div>
+          <div class="cc" style="width:100%;" onclick="drillCoord('GDL Oriente')"><div class="cc-hdr"><div class="cc-av" style="font-size:15px;">👨</div><div><div class="cc-nm" style="font-size:12px;">Fernando Cruz</div><div class="cc-sub">GDL Oriente · 124 ops.</div></div><div class="cc-pct pct-risk" style="font-size:18px;">62%</div></div><div class="cc-body"><div class="prog-bar"><div class="prog-fill f-risk" style="width:62%"></div></div></div></div>
+          <div style="width:1.5px;height:14px;background:var(--mu3);"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;">
+            <div style="background:var(--s3);border:0.5px solid var(--bdr2);border-radius:7px;padding:7px 6px;text-align:center;"><div style="font-size:10px;color:var(--mu2);">Mat.</div><div style="font-size:12px;font-weight:700;color:var(--blanco);">62 ops.</div><div style="font-size:13px;font-weight:800;color:var(--risk);">65%</div></div>
+            <div style="background:var(--s3);border:0.5px solid var(--bdr2);border-radius:7px;padding:7px 6px;text-align:center;"><div style="font-size:10px;color:var(--mu2);">Ves.</div><div style="font-size:12px;font-weight:700;color:var(--blanco);">62 ops.</div><div style="font-size:13px;font-weight:800;color:var(--crit);">59%</div></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:1.5px;height:18px;background:var(--mu3);"></div>
+          <div class="cc" style="width:100%;" onclick="drillCoord('GDL Poniente')"><div class="cc-hdr"><div class="cc-av" style="font-size:15px;">👩</div><div><div class="cc-nm" style="font-size:12px;">Sofía Herrera</div><div class="cc-sub">GDL Poniente · 88 ops.</div></div><div class="cc-pct pct-ok" style="font-size:18px;">83%</div></div><div class="cc-body"><div class="prog-bar"><div class="prog-fill f-ok" style="width:83%"></div></div></div></div>
+          <div style="width:1.5px;height:14px;background:var(--mu3);"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;">
+            <div style="background:var(--s3);border:0.5px solid var(--bdr2);border-radius:7px;padding:7px 6px;text-align:center;"><div style="font-size:10px;color:var(--mu2);">Mat.</div><div style="font-size:12px;font-weight:700;color:var(--blanco);">44 ops.</div><div style="font-size:13px;font-weight:800;color:var(--lima);">86%</div></div>
+            <div style="background:var(--s3);border:0.5px solid var(--bdr2);border-radius:7px;padding:7px 6px;text-align:center;"><div style="font-size:10px;color:var(--mu2);">Ves.</div><div style="font-size:12px;font-weight:700;color:var(--blanco);">44 ops.</div><div style="font-size:13px;font-weight:800;color:var(--lima2);">80%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sec-h"><div class="sec-t">📈 KPIs por coordinador</div></div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Coordinador</th><th>Depósito</th><th>Operadores</th><th>Grupo Piloto</th><th>Intermedio</th><th>Máster</th><th>Certs vigentes</th><th>Cumplimiento</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><b style="color:var(--blanco)">Ricardo Salinas</b></td><td style="color:var(--mu)">MTY Norte</td><td>112</td><td><span class="badge b-ok">100%</span></td><td><span class="badge b-warn">78%</span></td><td><span class="badge b-na">22%</span></td><td><span class="badge b-ok">95%</span></td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-ok" style="width:89%"></div></div><span class="pp-pct pct-ok">89%</span></div></td><td><button class="row-btn" onclick="drillCoord('MTY Norte')">Ver equipo →</button></td></tr>
+        <tr><td><b style="color:var(--blanco)">Mariana López</b></td><td style="color:var(--mu)">MTY Sur</td><td>98</td><td><span class="badge b-warn">88%</span></td><td><span class="badge b-risk">54%</span></td><td><span class="badge b-na">8%</span></td><td><span class="badge b-warn">79%</span></td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-warn" style="width:71%"></div></div><span class="pp-pct pct-warn">71%</span></div></td><td><button class="row-btn" onclick="drillCoord('MTY Sur')">Ver equipo →</button></td></tr>
+        <tr><td><b style="color:var(--blanco)">Fernando Cruz</b></td><td style="color:var(--mu)">GDL Oriente</td><td>124</td><td><span class="badge b-risk">72%</span></td><td><span class="badge b-risk">48%</span></td><td><span class="badge b-na">3%</span></td><td><span class="badge b-risk">66%</span></td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-risk" style="width:62%"></div></div><span class="pp-pct pct-risk">62%</span></div></td><td><button class="row-btn" onclick="drillCoord('GDL Oriente')">Ver equipo →</button></td></tr>
+        <tr><td><b style="color:var(--blanco)">Sofía Herrera</b></td><td style="color:var(--mu)">GDL Poniente</td><td>88</td><td><span class="badge b-ok">95%</span></td><td><span class="badge b-warn">70%</span></td><td><span class="badge b-na">15%</span></td><td><span class="badge b-ok">88%</span></td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-ok" style="width:83%"></div></div><span class="pp-pct pct-ok">83%</span></div></td><td><button class="row-btn" onclick="drillCoord('GDL Poniente')">Ver equipo →</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ OPERADORES ═══════════════ -->
+<div class="page" id="p-operadores">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div><div class="tag" id="op-coord-label">Todos los depósitos</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-top:2px;">Reporte de operadores</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="showToast('📥 Exportando lista de operadores a Excel...')">⬇ Exportar</button>
+      <button class="btn btn-primary" onclick="navTo('crear')">+ Asignar capacitación</button>
+    </div>
+  </div>
+  <div id="op-detail-panel" class="hidden">
+    <div class="detail-panel" id="op-detail-content"></div>
+  </div>
+  <div id="op-filter-bar" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;">
+    <button class="btn btn-primary" onclick="filterOps('all',this)">Todos (422)</button>
+    <button class="btn btn-ghost" onclick="filterOps('crit',this)">🔴 Críticos (47)</button>
+    <button class="btn btn-ghost" onclick="filterOps('risk',this)">🟠 En riesgo (110)</button>
+    <button class="btn btn-ghost" onclick="filterOps('nostart',this)">⬛ Sin iniciar (23)</button>
+    <button class="btn btn-ghost" onclick="filterOps('MTY Norte',this)">MTY Norte</button>
+    <button class="btn btn-ghost" onclick="filterOps('MTY Sur',this)">MTY Sur</button>
+    <button class="btn btn-ghost" onclick="filterOps('GDL Oriente',this)">GDL Oriente</button>
+    <button class="btn btn-ghost" onclick="filterOps('GDL Poniente',this)">GDL Poniente</button>
+  </div>
+  <input class="tbl-search" placeholder="🔍 Buscar operador por nombre, ID o depósito..." oninput="searchOps(this.value)">
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Operador</th><th>Coordinador</th><th>Depósito</th><th>Capacitaciones pendientes</th><th>Próximo vencimiento</th><th>Nivel</th><th>Cumplimiento</th><th>Acciones</th></tr></thead><tbody id="ops-tbody"></tbody></table></div>
+</div>
+
+<!-- ═══════════════ CAPACITACIONES ═══════════════ -->
+<div class="page" id="p-capacitaciones">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div><div class="tag">Catálogo de capacitaciones</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-top:2px;">Estado por capacitación — Región Norte</div></div>
+    <button class="btn btn-primary" onclick="navTo('crear')">+ Crear nueva capacitación</button>
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Capacitación</th><th>Nivel</th><th>Oblig.</th><th>Asignados</th><th>Completaron</th><th>En progreso</th><th>Sin iniciar</th><th>Venc. &lt;30d</th><th>Cobertura</th><th>Acciones</th></tr></thead>
+      <tbody id="caps-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ CREAR CURSO ═══════════════ -->
+<div class="page flex-page" id="p-crear" style="padding:0;min-height:calc(100vh - 54px);">
+  <div class="builder-top">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="font-size:12px;color:var(--mu2);">Creando: <span id="builder-title" style="color:var(--blanco);font-weight:600;">Sin título</span></div>
+    </div>
+    <div class="stepper">
+      <div class="step active" id="bst1" onclick="goBStep(1)"><div class="s-num">1</div><div class="s-lbl">Información</div></div>
+      <div class="s-arr">›</div>
+      <div class="step" id="bst2" onclick="goBStep(2)"><div class="s-num">2</div><div class="s-lbl">Contenido</div></div>
+      <div class="s-arr">›</div>
+      <div class="step" id="bst3" onclick="goBStep(3)"><div class="s-num">3</div><div class="s-lbl">Audiencia</div></div>
+      <div class="s-arr">›</div>
+      <div class="step" id="bst4" onclick="goBStep(4)"><div class="s-num">4</div><div class="s-lbl">Config.</div></div>
+      <div class="s-arr">›</div>
+      <div class="step" id="bst5" onclick="goBStep(5)"><div class="s-num">5</div><div class="s-lbl">Publicar</div></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="showToast('💾 Borrador guardado correctamente')">💾 Borrador</button>
+      <button class="btn btn-primary" id="bld-next-btn" onclick="nextBStep()">Siguiente →</button>
+    </div>
+  </div>
+  <div class="builder-body">
+    <div class="builder-sidebar hidden" id="builder-sidebar">
+      <div class="bs-hdr">Estructura del curso</div>
+      <button class="bs-add" onclick="showToast('Módulo 4 agregado. Escribe el nombre.')">＋ Agregar módulo</button>
+      <div class="mod-group"><div class="mod-h active" onclick="toggleMod(this)"><span class="mod-num">01</span><span class="mod-nm">Introducción al manejo defensivo</span><span style="font-size:10px;color:var(--mu2);">▾</span></div><div class="les-list"><div class="les-row active" onclick="selectLesson(this)"><span class="lt lt-v">VIDEO</span><span class="les-nm">¿Qué es el manejo defensivo?</span></div><div class="les-row" onclick="selectLesson(this)"><span class="lt lt-q">QUIZ</span><span class="les-nm">Evaluación inicial</span></div><div class="les-row" onclick="selectLesson(this)"><span class="lt lt-d">DOC</span><span class="les-nm">Guía rápida</span></div><div class="les-add" onclick="openLessonModal()">＋ Agregar lección</div></div></div>
+      <div class="mod-group"><div class="mod-h" onclick="toggleMod(this)"><span class="mod-num">02</span><span class="mod-nm">Técnicas de anticipación</span><span style="font-size:10px;color:var(--mu2);">▸</span></div></div>
+      <div class="mod-group"><div class="mod-h" onclick="toggleMod(this)"><span class="mod-num">03</span><span class="mod-nm">Evaluación final</span><span style="font-size:10px;color:var(--mu2);">▸</span></div></div>
+    </div>
+    <div class="builder-ed">
+      <!-- Step 1 -->
+      <div class="bs-pg on" id="bs1">
+        <div class="tag" style="margin-bottom:5px;">Paso 1 de 5</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:4px;">Información general del curso</div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:20px;">Define los datos principales del curso.</div>
+        <div class="g2">
+          <div>
+            <div class="fg"><div class="fl">Nombre del curso <span class="req">* requerido</span></div><input class="fi" id="ctitle" type="text" placeholder="Ej. Manejo defensivo en carretera federal" oninput="document.getElementById('builder-title').textContent=this.value||'Sin título'" maxlength="80"></div>
+            <div class="fg"><div class="fl">Descripción breve <span class="req">*</span></div><textarea class="fi fi-ta" placeholder="Describe el objetivo del curso..." maxlength="300"></textarea><span class="ai-btn" onclick="showToast('✨ IA generó descripción basada en el título del curso.')">✨ Generar con IA</span></div>
+            <div class="g2">
+              <div class="fg"><div class="fl">Programa / Nivel <span class="req">*</span></div><select class="fi fi-sel"><option value="">Seleccionar...</option><option>🟢 Grupo Piloto</option><option selected>🔵 Nivel Intermedio</option><option>🏆 Nivel Máster</option></select></div>
+              <div class="fg"><div class="fl">Categoría</div><select class="fi fi-sel"><option selected>🚌 Conducción</option><option>🦺 Seguridad vial</option><option>🔧 Cuidado de la unidad</option><option>🤝 Atención al pasajero</option><option>🚨 Emergencias</option><option>📋 Reglamento</option></select></div>
+            </div>
+            <div class="g2">
+              <div class="fg"><div class="fl">Duración estimada</div><div style="display:flex;gap:7px;"><input class="fi" type="number" value="45" style="flex:1;"><select class="fi fi-sel" style="width:90px;flex-shrink:0;"><option>minutos</option><option>horas</option></select></div></div>
+              <div class="fg"><div class="fl">Tipo de asignación</div><select class="fi fi-sel"><option>Obligatoria</option><option>Opcional</option><option>Recomendada</option></select></div>
+            </div>
+          </div>
+          <div>
+            <div class="fg"><div class="fl">Imagen de portada</div><div style="background:var(--s2);border:1.5px dashed rgba(208,223,0,0.22);border-radius:10px;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all .15s;" onclick="showToast('📁 Selecciona una imagen PNG o JPG (1280×720 recomendado)')" onmouseover="this.style.borderColor='rgba(208,223,0,0.45)'" onmouseout="this.style.borderColor='rgba(208,223,0,0.22)'"><span style="font-size:26px;color:var(--mu2);">🖼️</span><span style="font-size:12px;color:var(--mu2);">Subir imagen de portada</span><span style="font-size:10px;color:var(--mu3);">PNG, JPG · 1280×720</span></div><span class="ai-btn" onclick="showToast('✨ Portada generada con IA: imagen de camión en carretera con paleta de marca Traxión.')" style="width:100%;justify-content:center;">✨ Generar portada con IA</span></div>
+            <div class="fg"><div class="fl">Instructor / Autor</div><input class="fi" type="text" value="Equipo de Capacitación Traxión"></div>
+            <div class="fg"><div class="fl">Idioma</div><select class="fi fi-sel"><option>🇲🇽 Español (México)</option><option>🇺🇸 English</option></select></div>
+          </div>
+        </div>
+      </div>
+      <!-- Step 2 -->
+      <div class="bs-pg" id="bs2">
+        <div class="tag" style="margin-bottom:5px;">Paso 2 de 5</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:4px;">Contenido del curso</div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:18px;">Agrega módulos y lecciones. Selecciona el ▸ de cada lección para editarla.</div>
+        <!-- MOD 1 -->
+        <div class="les-ed">
+          <div style="display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--s3);">
+            <span style="font-size:11px;font-weight:800;color:var(--lima);">MÓDULO 1</span>
+            <input class="fi" value="Introducción al manejo defensivo" style="flex:1;padding:6px 10px;font-size:13px;font-weight:600;">
+            <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="openLessonModal()">＋ Lección</button>
+            <button class="btn btn-danger" style="padding:5px 10px;font-size:11px;" onclick="showToast('¿Confirmar eliminación del módulo? Esta acción no se puede deshacer.')">🗑</button>
+          </div>
+          <div style="padding:12px 14px;">
+            <!-- Video lesson -->
+            <div class="les-ed" style="border:0.5px solid var(--mu3);">
+              <div class="le-hdr" onclick="toggleLesson('lv1')"><span style="font-size:10px;color:var(--mu2);cursor:grab;">⠿</span><span class="lt lt-v">VIDEO</span><span style="font-size:13px;font-weight:500;flex:1;">¿Qué es el manejo defensivo?</span><span style="font-size:11px;color:var(--mu2);">4:32</span><span id="lv1-c" style="font-size:11px;color:var(--mu2);margin-left:6px;">▸</span></div>
+              <div class="le-body" id="lv1">
+                <div class="vid-zone" onclick="showToast('📁 Selecciona un archivo MP4, MOV o AVI para subir el video.')">
+                  <div class="vid-player"><div class="vid-bg">🚌</div><div class="vid-play">▶</div></div>
+                  <div class="vid-prog"><div class="vid-pf"></div></div>
+                  <div class="vid-inf"><span>manejo_defensivo_intro.mp4</span><span>4:32 · 48 MB</span></div>
+                </div>
+                <span class="ai-btn" onclick="showToast('✨ Subtítulos en español generados automáticamente. Revisa en la pestaña de subtítulos.')">✨ Generar subtítulos con IA</span>
+                <span class="ai-btn" onclick="showToast('✨ 3 preguntas de comprensión generadas a partir del contenido del video.')">✨ Crear quiz del video</span>
+              </div>
+            </div>
+            <!-- Quiz lesson -->
+            <div class="les-ed" style="border:0.5px solid var(--mu3);">
+              <div class="le-hdr" onclick="toggleLesson('lq1')"><span style="font-size:10px;color:var(--mu2);cursor:grab;">⠿</span><span class="lt lt-q">QUIZ</span><span style="font-size:13px;font-weight:500;flex:1;">Evaluación inicial — conceptos básicos</span><span style="font-size:11px;color:var(--mu2);">5 preguntas</span><span id="lq1-c" style="font-size:11px;color:var(--mu2);margin-left:6px;">▸</span></div>
+              <div class="le-body" id="lq1">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;">Preguntas</span><span class="ai-btn" style="margin:0;" onclick="showToast('✨ 5 preguntas generadas con IA a partir del contenido del módulo.')">✨ Generar con IA</span></div>
+                <div class="quiz-q"><div class="qq-n">Pregunta 1</div><div class="qq-t">¿Cuál es la distancia de seguridad mínima cuando llueve?</div><div class="q-opt" onclick="markOpt(this)"><div class="q-let">A</div><div class="q-txt">2 segundos</div></div><div class="q-opt" onclick="markOpt(this)"><div class="q-let">B</div><div class="q-txt">4 segundos</div></div><div class="q-opt ok" onclick="markOpt(this)"><div class="q-let">C</div><div class="q-txt">8 segundos ✓ Correcta</div></div><div class="q-opt" onclick="markOpt(this)"><div class="q-let">D</div><div class="q-txt">La misma que en seco</div></div></div>
+                <div class="quiz-q"><div class="qq-n">Pregunta 2</div><div class="qq-t">Velocidad máxima en carretera federal para unidades de personal:</div><div class="q-opt" onclick="markOpt(this)"><div class="q-let">A</div><div class="q-txt">110 km/h</div></div><div class="q-opt ok" onclick="markOpt(this)"><div class="q-let">B</div><div class="q-txt">90 km/h ✓ Correcta</div></div><div class="q-opt" onclick="markOpt(this)"><div class="q-let">C</div><div class="q-txt">80 km/h</div></div><div class="q-opt" onclick="markOpt(this)"><div class="q-let">D</div><div class="q-txt">100 km/h</div></div></div>
+                <button class="add-q-btn" onclick="showToast('Pregunta 3 agregada. Escribe el texto y las opciones de respuesta.')">＋ Agregar pregunta</button>
+                <div class="g2" style="margin-top:10px;"><div><div class="fl" style="font-size:10px;">Cal. mínima para pasar</div><input class="fi" type="number" value="70" style="padding:8px 10px;"></div><div><div class="fl" style="font-size:10px;">Intentos permitidos</div><select class="fi fi-sel" style="padding:8px 28px 8px 10px;"><option>Ilimitados</option><option>1</option><option>2</option><option>3</option></select></div></div>
+              </div>
+            </div>
+            <!-- Doc lesson -->
+            <div class="les-ed" style="border:0.5px solid var(--mu3);">
+              <div class="le-hdr" onclick="toggleLesson('ld1')"><span style="font-size:10px;color:var(--mu2);cursor:grab;">⠿</span><span class="lt lt-d">DOC</span><span style="font-size:13px;font-weight:500;flex:1;">Guía rápida — Puntos clave del módulo</span><span style="font-size:11px;color:var(--mu2);">PDF · 2 pág.</span><span id="ld1-c" style="font-size:11px;color:var(--mu2);margin-left:6px;">▸</span></div>
+              <div class="le-body" id="ld1">
+                <div style="background:var(--s3);border:1.5px dashed rgba(208,223,0,0.18);border-radius:8px;padding:18px;text-align:center;cursor:pointer;margin-bottom:8px;" onclick="showToast('📎 Selecciona un PDF, Word o PowerPoint para adjuntar.')"><div style="font-size:22px;margin-bottom:5px;">📄</div><div style="font-size:12px;color:var(--mu2);">guia_rapida_manejo_defensivo.pdf · 1.2 MB</div><div style="font-size:10px;color:var(--mu3);margin-top:3px;">Haz clic para reemplazar</div></div>
+                <span class="ai-btn" onclick="showToast('✨ Resumen generado: 5 puntos clave extraídos del PDF para la tarjeta flash del operador.')">✨ Generar resumen con IA</span>
+              </div>
+            </div>
+            <button style="width:100%;background:rgba(208,223,0,0.07);border:0.5px dashed rgba(208,223,0,0.28);color:var(--lima);border-radius:8px;padding:9px;font-size:11px;font-weight:700;cursor:pointer;" onclick="openLessonModal()">＋ Agregar lección al módulo 1</button>
+          </div>
+        </div>
+        <!-- Mods 2 & 3 collapsed -->
+        <div style="background:var(--s2);border:0.5px solid var(--bdr2);border-radius:12px;padding:12px 15px;margin-bottom:10px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="showToast('Módulo 2 abierto para edición.')"><span style="font-size:10px;cursor:grab;color:var(--mu2);">⠿</span><span style="font-size:11px;font-weight:800;color:var(--lima);">MÓDULO 2</span><span style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);flex:1;">Técnicas de anticipación y puntos ciegos</span><span style="font-size:11px;color:var(--mu2);">3 lecciones · 22 min</span><span style="font-size:11px;color:var(--mu2);">▸</span></div>
+        <div style="background:var(--s2);border:0.5px solid var(--bdr2);border-radius:12px;padding:12px 15px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="showToast('Módulo 3 abierto para edición.')"><span style="font-size:10px;cursor:grab;color:var(--mu2);">⠿</span><span style="font-size:11px;font-weight:800;color:var(--lima);">MÓDULO 3</span><span style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);flex:1;">Evaluación final y certificación</span><span style="font-size:11px;color:var(--mu2);">2 lecciones · 15 min</span><span style="font-size:11px;color:var(--mu2);">▸</span></div>
+        <button style="width:100%;background:rgba(208,223,0,0.08);border:0.5px dashed rgba(208,223,0,0.3);color:var(--lima);border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;" onclick="showToast('Módulo 4 agregado. Escribe el nombre del nuevo módulo.')">＋ Agregar nuevo módulo</button>
+      </div>
+      <!-- Step 3 -->
+      <div class="bs-pg" id="bs3">
+        <div class="tag" style="margin-bottom:5px;">Paso 3 de 5</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:4px;">Asignación de audiencia</div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:18px;">Selecciona quiénes recibirán este curso. Recibirán notificación al publicar.</div>
+        <div class="fg"><div class="fl">Asignar por <span class="req">*</span></div>
+          <div class="rg g4"><div class="rc sel" onclick="selRc(this)"><div class="rc-i">🏢</div><div class="rc-n">Depósito</div><div class="rc-s">Todos los ops. del depósito</div><div class="rc-chk">✓</div></div><div class="rc" onclick="selRc(this)"><div class="rc-i">👥</div><div class="rc-n">Coordinador</div><div class="rc-s">Equipo de un coordinador</div><div class="rc-chk"></div></div><div class="rc" onclick="selRc(this)"><div class="rc-i">🎓</div><div class="rc-n">Por nivel</div><div class="rc-s">Piloto, Intermedio o Máster</div><div class="rc-chk"></div></div><div class="rc" onclick="selRc(this)"><div class="rc-i">🌎</div><div class="rc-n">Toda la región</div><div class="rc-s">Los 422 operadores activos</div><div class="rc-chk"></div></div></div>
+        </div>
+        <div class="fg"><div class="fl">Seleccionar depósitos <span class="req">*</span></div>
+          <div class="aud-grid"><div class="ac sel" onclick="togAud(this)"><div style="font-size:20px;">🏭</div><div><div style="font-size:12px;font-weight:600;color:var(--blanco);">MTY Norte</div><div style="font-size:10px;color:var(--mu2);">112 ops. · R. Salinas</div></div><div class="ac-chk">✓</div></div><div class="ac sel" onclick="togAud(this)"><div style="font-size:20px;">🏭</div><div><div style="font-size:12px;font-weight:600;color:var(--blanco);">MTY Sur</div><div style="font-size:10px;color:var(--mu2);">98 ops. · M. López</div></div><div class="ac-chk">✓</div></div><div class="ac" onclick="togAud(this)"><div style="font-size:20px;">🏭</div><div><div style="font-size:12px;font-weight:600;color:var(--blanco);">GDL Oriente</div><div style="font-size:10px;color:var(--mu2);">124 ops. · F. Cruz</div></div><div class="ac-chk"></div></div><div class="ac" onclick="togAud(this)"><div style="font-size:20px;">🏭</div><div><div style="font-size:12px;font-weight:600;color:var(--blanco);">GDL Poniente</div><div style="font-size:10px;color:var(--mu2);">88 ops. · S. Herrera</div></div><div class="ac-chk"></div></div></div>
+        </div>
+        <div style="background:rgba(208,223,0,0.07);border:0.5px solid rgba(208,223,0,0.2);border-radius:9px;padding:12px 15px;display:flex;align-items:center;gap:10px;margin-bottom:18px;"><span style="font-size:20px;">👥</span><div><div style="font-size:13px;font-weight:600;color:var(--blanco);">210 operadores seleccionados</div><div style="font-size:11px;color:var(--mu2);margin-top:1px;">MTY Norte (112) + MTY Sur (98) · Notificación inmediata al publicar</div></div></div>
+        <div class="g2"><div class="fg"><div class="fl">Fecha límite <span class="req">*</span></div><input class="fi" type="date" value="2025-07-31"></div><div class="fg"><div class="fl">Notificación inicial</div><select class="fi fi-sel"><option>Notificar al publicar (inmediato)</option><option>Programar mañana 8am</option><option>Solo recordatorio</option></select></div></div>
+        <div class="fg"><div class="fl">Recordatorios automáticos</div><div style="display:flex;flex-direction:column;gap:8px;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--lima);width:15px;height:15px;"><span style="font-size:13px;color:rgba(255,255,255,0.8);">30 días antes del vencimiento</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--lima);width:15px;height:15px;"><span style="font-size:13px;color:rgba(255,255,255,0.8);">7 días antes del vencimiento</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--lima);width:15px;height:15px;"><span style="font-size:13px;color:rgba(255,255,255,0.8);">1 día antes — alerta urgente por WhatsApp</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--lima);width:15px;height:15px;"><span style="font-size:13px;color:rgba(255,255,255,0.8);">Notificar al coordinador cuando un operador completa</span></label></div></div>
+      </div>
+      <!-- Step 4 -->
+      <div class="bs-pg" id="bs4">
+        <div class="tag" style="margin-bottom:5px;">Paso 4 de 5</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:4px;">Configuración y reglas</div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:18px;">Personaliza el comportamiento del curso.</div>
+        <div class="g2">
+          <div><div style="font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Acceso y disponibilidad</div><div class="card card-p" style="padding:4px 15px;"><div class="sr"><div><div class="sr-n">Disponible sin conexión</div><div class="sr-d">Descargar para completar sin internet</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div><div class="sr"><div><div class="sr-n">Modo solo audio (voz)</div><div class="sr-d">Escuchar contenido sin pantalla</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div><div class="sr"><div><div class="sr-n">Completar en orden</div><div class="sr-d">Módulos secuenciales obligatorios</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div><div class="sr"><div><div class="sr-n">Pausar y continuar</div><div class="sr-d">Progreso guardado automáticamente</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div><div class="sr" style="border-bottom:none;"><div><div class="sr-n">Visible en catálogo</div><div class="sr-d">Aunque no esté asignado</div></div><div class="tog" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div></div></div>
+          <div><div style="font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Gamificación y certificado</div><div class="card card-p" style="padding:4px 15px;margin-bottom:12px;"><div class="sr"><div><div class="sr-n">Activar puntos</div><div class="sr-d">Ganan puntos al completar</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div><div class="sr"><div><div class="sr-n">Insignia al completar</div><div class="sr-d">Badge en el perfil del operador</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div><div class="sr" style="border-bottom:none;"><div><div class="sr-n">Aparecer en ranking</div><div class="sr-d">Cuenta para tabla del depósito</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div></div><div class="g2" style="margin-bottom:12px;"><div><div class="fl" style="font-size:10px;">Puntos al completar</div><input class="fi" type="number" value="50" style="padding:8px 10px;"></div><div><div class="fl" style="font-size:10px;">Bonus 100%</div><input class="fi" type="number" value="100" style="padding:8px 10px;"></div></div><div class="card card-p" style="padding:4px 15px;"><div class="sr"><div><div class="sr-n">Emitir certificado</div><div class="sr-d">Digital con código QR</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div><div class="sr" style="border-bottom:none;"><div><div class="sr-n">Vigencia</div></div><select class="fi fi-sel" style="width:100px;padding:5px 25px 5px 8px;font-size:11px;"><option>1 año</option><option>6 meses</option><option>2 años</option><option>Permanente</option></select></div></div></div>
+        </div>
+      </div>
+      <!-- Step 5 -->
+      <div class="bs-pg" id="bs5">
+        <div id="bs5-review">
+          <div class="tag" style="margin-bottom:5px;">Paso 5 de 5</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:4px;">Revisar y publicar</div>
+          <div style="font-size:12px;color:var(--mu);margin-bottom:18px;">Revisa el resumen antes de publicar.</div>
+          <div class="pub-bn"><div class="pub-i">🚀</div><div class="pub-t">¡Todo listo para publicar!</div><div class="pub-s">El curso se asignará a <b>210 operadores</b> en MTY Norte y MTY Sur.<br>Recibirán notificación por app y WhatsApp al publicar.</div></div>
+          <div class="g2">
+            <div><div style="font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;">Información</div><div class="rv-card"><div class="rv-row"><div class="rv-k">Nombre</div><div class="rv-v" id="rv-name">—</div></div><div class="rv-row"><div class="rv-k">Nivel</div><div class="rv-v"><span class="badge b-blue">🔵 Intermedio</span></div></div><div class="rv-row"><div class="rv-k">Categoría</div><div class="rv-v">🚌 Conducción</div></div><div class="rv-row"><div class="rv-k">Duración</div><div class="rv-v">45 min</div></div><div class="rv-row"><div class="rv-k">Tipo</div><div class="rv-v">Obligatoria</div></div></div><div style="font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;margin-top:14px;">Audiencia</div><div class="rv-card"><div class="rv-row"><div class="rv-k">Operadores</div><div class="rv-v">210 asignados</div></div><div class="rv-row"><div class="rv-k">Depósitos</div><div class="rv-v">MTY Norte · MTY Sur</div></div><div class="rv-row"><div class="rv-k">Fecha límite</div><div class="rv-v">31 julio 2025</div></div><div class="rv-row"><div class="rv-k">Recordatorios</div><div class="rv-v"><span class="badge b-ok">3 activos</span></div></div></div></div>
+            <div><div style="font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;">Contenido</div><div class="rv-card"><div class="rv-row"><div class="rv-k">Módulos</div><div class="rv-v">3 módulos</div></div><div class="rv-row"><div class="rv-k">Videos</div><div class="rv-v"><span class="badge b-ok">4 cargados</span></div></div><div class="rv-row"><div class="rv-k">Quizzes</div><div class="rv-v"><span class="badge b-ok">2 listos</span></div></div><div class="rv-row"><div class="rv-k">Documentos</div><div class="rv-v"><span class="badge b-ok">2 adjuntos</span></div></div></div><div style="font-size:11px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;margin-top:14px;">Configuración</div><div class="rv-card"><div class="rv-row"><div class="rv-k">Offline</div><div class="rv-v"><span class="badge b-ok">✓ Activado</span></div></div><div class="rv-row"><div class="rv-k">Modo voz</div><div class="rv-v"><span class="badge b-ok">✓ Activado</span></div></div><div class="rv-row"><div class="rv-k">Puntos</div><div class="rv-v">50 + 100 bonus</div></div><div class="rv-row"><div class="rv-k">Certificado</div><div class="rv-v"><span class="badge b-ok">✓ 1 año vigencia</span></div></div></div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:20px;"><button class="btn btn-ghost" style="flex:1;padding:13px;" onclick="goBStep(1)">← Editar curso</button><button class="btn btn-primary" style="flex:2;padding:13px;font-size:15px;" onclick="publishCourse()">🚀 Publicar capacitación ahora</button></div>
+        </div>
+        <div class="success-wrap" id="bs5-success">
+          <div class="sw-i">🎉</div>
+          <div class="sw-t">¡Capacitación publicada!</div>
+          <div class="sw-s">El curso <b id="sw-name"></b> fue publicado exitosamente.<br>210 operadores recibirán la notificación en los próximos minutos.</div>
+          <div class="sw-stats"><div class="sw-st"><div class="sw-sv">210</div><div class="sw-sl">Operadores notificados</div></div><div class="sw-st"><div class="sw-sv">31 Jul</div><div class="sw-sl">Fecha límite</div></div><div class="sw-st"><div class="sw-sv">+50</div><div class="sw-sl">Puntos al completar</div></div></div>
+          <button class="btn btn-primary" style="width:100%;padding:13px;font-size:14px;margin-bottom:10px;" onclick="resetBuilder()">＋ Crear otra capacitación</button>
+          <button class="btn btn-ghost" style="width:100%;padding:11px;" onclick="navTo('capacitaciones')">← Ver catálogo de capacitaciones</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ALERTAS ═══════════════ -->
+<div class="page" id="p-alertas">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div><div class="tag">Centro de alertas</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-top:2px;">18 alertas activas</div></div>
+    <button class="btn btn-ghost" onclick="showToast('Todas las alertas marcadas como leídas.')">✓ Marcar todas como leídas</button>
+  </div>
+  <div id="alertas-list"></div>
+</div>
+
+<!-- ═══════════════ NOTIFICACIONES ═══════════════ -->
+<div class="page" id="p-notificaciones">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:16px;">🔔 Centro de notificaciones</div>
+  <div class="notif-panel">
+    <div class="notif-item" onclick="showToast('Abriendo detalle de operador Jorge Ramírez...');navTo('operadores')"><div class="notif-dot2" style="background:var(--crit)"></div><div><div class="notif-title">Jorge Ramírez vence en 3 días — Manejo defensivo</div><div class="notif-sub">Op. #04821 · MTY Sur · Coordinador: M. López · Avance actual: 20%</div><div class="notif-time">Hace 15 minutos</div></div></div>
+    <div class="notif-item" onclick="showToast('Abriendo detalle de operador Luis Aguirre...');navTo('operadores')"><div class="notif-dot2" style="background:var(--crit)"></div><div><div class="notif-title">Luis Aguirre — NOM-087 sin iniciar, vence en 4 días</div><div class="notif-sub">Op. #03317 · MTY Sur · Coordinador: M. López · Avance actual: 0%</div><div class="notif-time">Hace 32 minutos</div></div></div>
+    <div class="notif-item" onclick="navTo('alertas')"><div class="notif-dot2" style="background:var(--risk)"></div><div><div class="notif-title">Fernando Cruz — depósito GDL Oriente en riesgo</div><div class="notif-sub">Cumplimiento 62% — Meta Q2: 85% — 47 operadores con pendientes</div><div class="notif-time">Hace 1 hora</div></div></div>
+    <div class="notif-item" onclick="showToast('Capacitación \"Manejo defensivo\" recién publicada.')"><div class="notif-dot2" style="background:var(--lima)"></div><div><div class="notif-title">✓ Capacitación publicada: Manejo defensivo en carretera</div><div class="notif-sub">210 operadores notificados · MTY Norte y MTY Sur</div><div class="notif-time">Hace 2 horas</div></div></div>
+    <div class="notif-item" onclick="showToast('Ver perfil de Ricardo Salinas...')"><div class="notif-dot2" style="background:var(--lima)"></div><div><div class="notif-title">🏆 Ricardo Salinas superó meta mensual</div><div class="notif-sub">Depósito MTY Norte alcanzó 89% de cumplimiento — Meta 85%</div><div class="notif-time">Hace 3 horas</div></div></div>
+    <div class="notif-item"><div class="notif-dot2" style="background:var(--gmd)"></div><div><div class="notif-title">Reporte semanal disponible</div><div class="notif-sub">El reporte de cumplimiento de la semana del 7 al 11 de julio está listo para descargar</div><div class="notif-time">Ayer, 8:00 am</div></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ PERFIL HR ═══════════════ -->
+<div class="page" id="p-perfil-hr">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:20px;">👤 Mi perfil — RRHH</div>
+  <div class="g2">
+    <div class="card card-p">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:0.5px solid var(--mu3);">
+        <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--oliva),var(--lima));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--negro);">EV</div>
+        <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--blanco);">Erika Vargas</div><div style="font-size:12px;color:var(--gmd);margin-top:2px;">Gerente Regional de RRHH</div><div style="font-size:11px;color:var(--lima);font-weight:700;margin-top:4px;">Región Norte · Grupo Traxión</div></div>
+      </div>
+      <div class="fg"><div class="fl">Nombre completo</div><input class="fi" value="Erika Vargas Castillo"></div>
+      <div class="fg"><div class="fl">Correo electrónico</div><input class="fi" type="email" value="e.vargas@traxion.com.mx"></div>
+      <div class="fg"><div class="fl">Teléfono</div><input class="fi" type="tel" value="+52 81 1234 5678"></div>
+      <div class="fg"><div class="fl">Región</div><select class="fi fi-sel"><option selected>Región Norte</option><option>Región Centro</option><option>Región Sur</option></select></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="showToast('✅ Cambios guardados correctamente.')">Guardar cambios</button>
+    </div>
+    <div>
+      <div class="card card-p" style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">Resumen de actividad</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--s3);border-radius:9px;padding:12px;text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--lima);">34</div><div style="font-size:10px;color:var(--mu2);margin-top:2px;">Cursos creados</div></div>
+          <div style="background:var(--s3);border-radius:9px;padding:12px;text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--lima);">422</div><div style="font-size:10px;color:var(--mu2);margin-top:2px;">Operadores a cargo</div></div>
+          <div style="background:var(--s3);border-radius:9px;padding:12px;text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--lima2);">74%</div><div style="font-size:10px;color:var(--mu2);margin-top:2px;">Cumplimiento actual</div></div>
+          <div style="background:var(--s3);border-radius:9px;padding:12px;text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--risk);">18</div><div style="font-size:10px;color:var(--mu2);margin-top:2px;">Alertas activas</div></div>
+        </div>
+      </div>
+      <div class="card card-p">
+        <div style="font-size:12px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">Seguridad</div>
+        <div class="fg"><div class="fl">Contraseña actual</div><input class="fi" type="password" placeholder="••••••••"></div>
+        <div class="fg"><div class="fl">Nueva contraseña</div><input class="fi" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-ghost" style="width:100%;" onclick="showToast('✅ Contraseña actualizada correctamente.')">Actualizar contraseña</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP OPERADOR (MOBILE) ═══════════════ -->
+<div class="page phone-page" id="p-app-operador">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div><div class="tag">Vista del operador</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-top:2px;">App móvil — Carlos Mendoza</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="phNav('ph-home','ph-nb-home')">🏠 Inicio</button>
+      <button class="btn btn-ghost" onclick="phNav('ph-ranking','ph-nb-ranking')">🏆 Ranking</button>
+      <button class="btn btn-ghost" onclick="phNav('ph-recompensas','ph-nb-profile')">🎁 Recompensas</button>
+      <button class="btn btn-ghost" onclick="phNav('ph-checklist','ph-nb-courses')">✅ Checklist</button>
+    </div>
+  </div>
+  <div class="phone-wrap">
+    <div class="phone" style="position:relative;">
+      <div class="ph-status"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="ph-screen" id="ph-screen">
+
+        <!-- HOME -->
+        <div class="ph-pg on" id="ph-home">
+          <div class="ph-hdr">
+            <div class="ph-hdr-r"><div><div class="ph-greet">Bienvenido de vuelta,</div><div class="ph-name">Carlos Mendoza</div></div><div class="ph-bell" onclick="phNav('ph-notif','ph-nb-home')">🔔</div></div>
+            <div class="lvl-pill"><span style="font-size:12px;">⭐</span><span class="lvl-t">NIVEL EXPERTO</span><span class="lvl-s">· 1,840 pts</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mu2);margin-bottom:5px;"><span>Progreso al siguiente nivel</span><span>1,840 / 3,000</span></div>
+            <div class="prog-bar"><div class="prog-fill f-ok" style="width:62%"></div></div>
+          </div>
+          <div class="ph-content">
+            <div style="font-size:12px;font-weight:700;color:var(--blanco);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">📚 Lección de hoy</div>
+            <div class="ph-lec" onclick="phNav('ph-lesson','ph-nb-courses')">
+              <div class="ph-lec-tag"><span class="ph-dot"></span>IA recomienda · Obligatoria</div>
+              <div class="ph-lec-t">Manejo defensivo en carretera federal</div>
+              <div class="ph-lec-m"><span>⏱ 4 min</span><span>🎥 Video + Quiz</span><span>⭐ +50 pts</span></div>
+              <button class="ph-btn">▶ Comenzar ahora</button>
+            </div>
+            <div class="ph-streak"><span style="font-size:28px;">🔥</span><div><div class="ph-streak-n">7 días</div><div class="ph-streak-l">¡Racha activa! Sigue así</div></div><span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--lima);cursor:pointer;">+25 pts →</span></div>
+            <div style="font-size:12px;font-weight:700;color:var(--blanco);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">📖 Mis cursos</div>
+            <div class="ph-grid">
+              <div class="ph-qc" onclick="phNav('ph-cursos','ph-nb-courses')"><span class="ph-qce">🚌</span><div class="ph-qcn">Conducción segura</div><div class="ph-mb"><div class="ph-mf" style="width:75%;background:var(--lima);"></div></div><div class="ph-ml">75% completado</div></div>
+              <div class="ph-qc" onclick="phNav('ph-cursos','ph-nb-courses')"><span class="ph-qce">🦺</span><div class="ph-qcn">Seguridad vial</div><div class="ph-mb"><div class="ph-mf" style="width:50%;background:var(--lima2);"></div></div><div class="ph-ml">50% completado</div></div>
+              <div class="ph-qc" onclick="phNav('ph-cursos','ph-nb-courses')"><span class="ph-qce">🤝</span><div class="ph-qcn">Atención pasajero</div><div class="ph-mb"><div class="ph-mf" style="width:90%;background:var(--lima);"></div></div><div class="ph-ml">90% completado</div></div>
+              <div class="ph-qc" onclick="phNav('ph-checklist','ph-nb-courses')"><span class="ph-qce">✅</span><div class="ph-qcn">Checklist hoy</div><div class="ph-mb"><div class="ph-mf" style="width:45%;background:var(--oliva);"></div></div><div class="ph-ml">9/17 ítems</div></div>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:var(--blanco);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">🏆 Tu posición</div>
+            <div style="display:flex;align-items:center;gap:11px;background:rgba(208,223,0,0.06);border:0.5px solid rgba(208,223,0,0.14);border-radius:12px;padding:12px 13px;cursor:pointer;margin-bottom:14px;" onclick="phNav('ph-ranking','ph-nb-ranking')">
+              <span style="font-size:28px;">🏅</span><div><div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--blanco);line-height:1.1;">#3 en Depósito MTY</div><div style="font-size:11px;color:var(--mu2);margin-top:1px;">Top 5% nacional · 1,840 pts</div></div><span style="margin-left:auto;font-size:13px;font-weight:700;color:var(--lima);">→</span>
+            </div>
+          </div>
+          <button class="vfab" onclick="showToast('🎙️ Modo voz activado — La lección se leerá en voz alta en español mexicano.')">🎙️</button>
+        </div>
+
+        <!-- CURSOS -->
+        <div class="ph-pg" id="ph-cursos">
+          <div style="background:radial-gradient(ellipse 100% 60% at 50% -10%,rgba(208,223,0,0.10) 0%,transparent 60%);padding:14px 18px 10px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:10px;">📖 Catálogo de cursos</div>
+            <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;">
+              <div style="flex-shrink:0;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;background:var(--lima);color:var(--negro);cursor:pointer;">Todos</div>
+              <div style="flex-shrink:0;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);color:var(--gmd);cursor:pointer;" onclick="showToast('Filtro: Conducción')">Conducción</div>
+              <div style="flex-shrink:0;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);color:var(--gmd);cursor:pointer;" onclick="showToast('Filtro: Seguridad vial')">Seguridad</div>
+              <div style="flex-shrink:0;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);color:var(--gmd);cursor:pointer;" onclick="showToast('Filtro: La unidad')">La unidad</div>
+              <div style="flex-shrink:0;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);color:var(--gmd);cursor:pointer;" onclick="showToast('Filtro: Pasajeros')">Pasajeros</div>
+            </div>
+          </div>
+          <div style="padding:10px 18px;" id="cursos-list"></div>
+        </div>
+
+        <!-- LESSON -->
+        <div class="ph-pg" id="ph-lesson" style="flex-direction:column;">
+          <div class="ph-vid"><div class="ph-vid-bg">🚌</div><div class="ph-vid-ov"></div><button class="ph-vid-pl" onclick="showQuiz()" style="border:none;">▶</button><div style="position:absolute;bottom:11px;right:13px;font-size:11px;font-weight:600;color:var(--mu);z-index:1;">2:18 / 4:05</div><div class="ph-vid-pbar"><div class="ph-vid-ppf"></div></div></div>
+          <div style="flex:1;overflow-y:auto;padding:14px 18px;scrollbar-width:none;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gmd);margin-bottom:12px;cursor:pointer;" onclick="phNav('ph-cursos','ph-nb-courses')">← Volver a cursos</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lima);margin-bottom:4px;">🔵 Intermedio · Módulo 2 de 4</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--blanco);margin-bottom:12px;line-height:1.2;">Manejo defensivo en carretera federal</div>
+            <div class="steps-row"><div class="sd done"></div><div class="sd cur"></div><div class="sd"></div><div class="sd"></div></div>
+            <div id="lesson-content">
+              <div class="kcard"><div class="kcard-t">📌 Puntos clave</div><div class="kp"><div class="kn">1</div><div class="kt"><strong>Distancia de seguridad:</strong> mínimo 4 segundos. En lluvia: 8 segundos sin excepción.</div></div><div class="kp"><div class="kn">2</div><div class="kt"><strong>Velocidad máxima:</strong> 90 km/h en carretera federal, 60 km/h zona urbana.</div></div><div class="kp"><div class="kn">3</div><div class="kt"><strong>Señales anticipadas:</strong> activa intermitentes 30 metros antes de cualquier maniobra.</div></div><div class="kp"><div class="kn">4</div><div class="kt"><strong>Revisión de espejos:</strong> cada 5-8 segundos. Puntos ciegos 3 veces mayores que en autos.</div></div></div>
+            </div>
+            <div id="quiz-section" class="hidden">
+              <div class="kcard"><div class="kcard-t">❓ Verifica tu aprendizaje</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--blanco);margin-bottom:12px;line-height:1.2;">¿Cuál es la distancia de seguridad mínima cuando llueve?</div>
+                <div class="ph-opt" onclick="pickOpt(this,false)"><div class="ph-ol">A</div><div class="ph-ot">2 segundos de distancia</div></div>
+                <div class="ph-opt" onclick="pickOpt(this,false)"><div class="ph-ol">B</div><div class="ph-ot">4 segundos de distancia</div></div>
+                <div class="ph-opt" onclick="pickOpt(this,true)" id="correct-opt"><div class="ph-ol">C</div><div class="ph-ot">8 segundos de distancia</div></div>
+                <div class="ph-opt" onclick="pickOpt(this,false)"><div class="ph-ol">D</div><div class="ph-ot">La misma que en tiempo seco</div></div>
+              </div>
+            </div>
+            <div class="res-screen" id="res-screen">
+              <div class="res-e">🎉</div>
+              <div class="res-t">¡Módulo completado!</div>
+              <div class="res-s">Respondiste correctamente.<br>Tu conocimiento protege a todos tus pasajeros.</div>
+              <div class="pts-box"><div class="pts-big">+50</div><div class="pts-lbl">puntos ganados</div></div>
+              <button class="ph-btn" onclick="phNav('ph-home','ph-nb-home');resetLesson()" style="width:100%;margin-bottom:8px;">Siguiente módulo →</button>
+              <button class="ph-btn-ghost" onclick="phNav('ph-cursos','ph-nb-courses');resetLesson()">Volver a cursos</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RANKING -->
+        <div class="ph-pg" id="ph-ranking">
+          <div style="padding:14px 18px 0;background:radial-gradient(ellipse 100% 60% at 50% -10%,rgba(208,223,0,0.09) 0%,transparent 60%);">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:10px;">🏆 Tabla de posiciones</div>
+            <div class="itabs" style="margin-bottom:0;">
+              <div class="itab on" onclick="swTab(this,'ph-ranking-tab')">Mi depósito</div>
+              <div class="itab" onclick="swTab(this,'ph-ranking-tab')">Regional</div>
+              <div class="itab" onclick="swTab(this,'ph-ranking-tab')">Nacional</div>
+            </div>
+          </div>
+          <div class="podium"><div class="pi"><div class="pav">👤</div><div class="pn">Marco A.</div><div class="pp2" style="color:var(--gmd)">2,150</div></div><div class="pi"><div style="font-size:16px;">👑</div><div class="pav">🧑</div><div class="pn">Ramón García</div><div class="pp2">3,420</div></div><div class="pi"><div class="pav">👨</div><div class="pn">Luis M.</div><div class="pp2" style="color:var(--gdk)">1,980</div></div></div>
+          <div class="rr"><div class="rr-n">1</div><div class="rr-av">🧑</div><div class="rr-info"><div class="rr-nm">Ramón García</div><div class="rr-dp">MTY Norte · Máster</div></div><div class="rr-pts">3,420</div></div>
+          <div class="rr"><div class="rr-n">2</div><div class="rr-av">👤</div><div class="rr-info"><div class="rr-nm">Marco Aurelio R.</div><div class="rr-dp">MTY Norte · Intermedio</div></div><div class="rr-pts">2,150</div></div>
+          <div class="rr me"><div class="rr-n">3</div><div class="rr-av">😎</div><div class="rr-info"><div class="rr-nm">Carlos Mendoza (tú)</div><div class="rr-dp">MTY Norte · Intermedio</div></div><div class="rr-pts">1,840</div></div>
+          <div class="rr"><div class="rr-n">4</div><div class="rr-av">👤</div><div class="rr-info"><div class="rr-nm">Luis Manuel V.</div><div class="rr-dp">MTY Norte · Intermedio</div></div><div class="rr-pts">1,750</div></div>
+          <div class="rr"><div class="rr-n">5</div><div class="rr-av">👩</div><div class="rr-info"><div class="rr-nm">Ana Sofía P.</div><div class="rr-dp">MTY Norte · Piloto</div></div><div class="rr-pts">1,620</div></div>
+          <div class="rr"><div class="rr-n">6</div><div class="rr-av">👨</div><div class="rr-info"><div class="rr-nm">Jorge Elizondo</div><div class="rr-dp">MTY Norte · Piloto</div></div><div class="rr-pts">1,480</div></div>
+          <div class="rr"><div class="rr-n">7</div><div class="rr-av">👤</div><div class="rr-info"><div class="rr-nm">Francisco Torres</div><div class="rr-dp">MTY Norte · Piloto</div></div><div class="rr-pts">1,310</div></div>
+          <div class="rr"><div class="rr-n">8</div><div class="rr-av">👤</div><div class="rr-info"><div class="rr-nm">Sergio Alvarado</div><div class="rr-dp">MTY Norte · Piloto</div></div><div class="rr-pts">1,240</div></div>
+          <div style="height:8px;"></div>
+        </div>
+
+        <!-- CHECKLIST -->
+        <div class="ph-pg" id="ph-checklist">
+          <div style="padding:14px 18px 10px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gmd);margin-bottom:10px;cursor:pointer;" onclick="phNav('ph-home','ph-nb-home')">← Volver</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:3px;">✅ Checklist preoperacional</div>
+            <div style="font-size:11px;color:var(--mu2);margin-bottom:0;">Completa antes de iniciar tu ruta de hoy</div>
+          </div>
+          <div class="ck-section-lbl">🔎 Exterior del vehículo</div>
+          <div style="padding:0 18px;">
+            <div class="ck-item chk" onclick="togCk(this)"><div class="ck-box">✓</div><span class="ck-e">🚌</span><div><div class="ck-t">Carrocería sin daños visibles</div><div class="ck-s">Revisar golpes, rayones o abolladuras</div></div></div>
+            <div class="ck-item chk" onclick="togCk(this)"><div class="ck-box">✓</div><span class="ck-e">💡</span><div><div class="ck-t">Luces delanteras y traseras</div><div class="ck-s">Faros, direccionales, frenos</div></div></div>
+            <div class="ck-item" onclick="togCk(this)"><div class="ck-box"></div><span class="ck-e">🔵</span><div><div class="ck-t">Neumáticos — presión y estado</div><div class="ck-s">Mínimo 80 PSI, sin desgaste excesivo</div></div></div>
+            <div class="ck-item" onclick="togCk(this)"><div class="ck-box"></div><span class="ck-e">🔧</span><div><div class="ck-t">Espejos laterales y central</div><div class="ck-s">Ajustados y sin daños</div></div></div>
+          </div>
+          <div class="ck-section-lbl">🛢️ Fluidos y motor</div>
+          <div style="padding:0 18px;">
+            <div class="ck-item chk" onclick="togCk(this)"><div class="ck-box">✓</div><span class="ck-e">🛢️</span><div><div class="ck-t">Nivel de aceite del motor</div><div class="ck-s">Dentro del rango MIN-MAX</div></div></div>
+            <div class="ck-item chk" onclick="togCk(this)"><div class="ck-box">✓</div><span class="ck-e">💧</span><div><div class="ck-t">Nivel de agua del radiador</div><div class="ck-s">Revisión en frío</div></div></div>
+            <div class="ck-item" onclick="togCk(this)"><div class="ck-box"></div><span class="ck-e">⛽</span><div><div class="ck-t">Nivel de combustible</div><div class="ck-s">Suficiente para la ruta asignada</div></div></div>
+          </div>
+          <div class="ck-section-lbl">🚨 Seguridad y equipo</div>
+          <div style="padding:0 18px;">
+            <div class="ck-item" onclick="togCk(this)"><div class="ck-box"></div><span class="ck-e">🧯</span><div><div class="ck-t">Extintor vigente y accesible</div><div class="ck-s">Carga completa, fecha vigente</div></div></div>
+            <div class="ck-item" onclick="togCk(this)"><div class="ck-box"></div><span class="ck-e">🩺</span><div><div class="ck-t">Botiquín de primeros auxilios</div><div class="ck-s">Completo y en fecha</div></div></div>
+            <div class="ck-item" onclick="togCk(this)"><div class="ck-box"></div><span class="ck-e">⚠️</span><div><div class="ck-t">Triángulos de seguridad</div><div class="ck-s">Mínimo 2, en buen estado</div></div></div>
+          </div>
+          <div style="padding:12px 18px 0;"><div id="ck-count" style="text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--lima);margin-bottom:6px;">5 / 10 ítems completados</div><div style="text-align:center;font-size:11px;color:var(--mu2);margin-bottom:12px;">Completa todos los ítems para reportar tu unidad</div><button class="ph-btn" onclick="submitChecklist()" style="width:100%;margin-bottom:16px;">Enviar reporte de unidad →</button></div>
+        </div>
+
+        <!-- RECOMPENSAS -->
+        <div class="ph-pg" id="ph-recompensas">
+          <div style="padding:14px 18px 0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(208,223,0,0.10) 0%,transparent 65%);">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);margin-bottom:10px;">🎁 Tienda de recompensas</div>
+            <div style="background:var(--s3);border:0.5px solid rgba(208,223,0,0.22);border-radius:16px;padding:16px;text-align:center;margin-bottom:14px;">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:800;color:var(--lima);line-height:1;">1,840</div>
+              <div style="font-size:12px;color:var(--mu2);margin-top:2px;">puntos disponibles</div>
+              <div style="display:flex;gap:8px;justify-content:center;margin-top:9px;"><div style="background:var(--s2);border-radius:7px;padding:7px 12px;text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--blanco);">4,210</div><div style="font-size:9px;color:var(--mu2);margin-top:1px;">pts ganados total</div></div><div style="background:var(--s2);border-radius:7px;padding:7px 12px;text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--blanco);">2,370</div><div style="font-size:9px;color:var(--mu2);margin-top:1px;">pts canjeados</div></div></div>
+            </div>
+          </div>
+          <div style="padding:0 18px 16px;">
+            <div class="rw-grid">
+              <div class="rw-card" onclick="canjear('Vales de gasolina',500)"><span class="rw-e">⛽</span><div class="rw-n">Vales de gasolina</div><div class="rw-pts">500 pts</div><div class="rw-s">= $50 pesos · Vigencia 30 días</div></div>
+              <div class="rw-card" onclick="canjear('Día libre extra',1200)"><span class="rw-e">📅</span><div class="rw-n">Día libre extra</div><div class="rw-pts">1,200 pts</div><div class="rw-s">Quedan 8 disponibles</div></div>
+              <div class="rw-card" onclick="canjear('Vale supermercado',800)"><span class="rw-e">🛒</span><div class="rw-n">Vale supermercado</div><div class="rw-pts">800 pts</div><div class="rw-s">OXXO / Walmart / Chedraui</div></div>
+              <div class="rw-card" onclick="canjear('Recarga de datos',300)"><span class="rw-e">📱</span><div class="rw-n">Recarga de datos</div><div class="rw-pts">300 pts</div><div class="rw-s">1 GB · Cualquier operadora</div></div>
+              <div class="rw-card" onclick="canjear('Bono en nómina',2000)"><span class="rw-e">💰</span><div class="rw-n">Bono en nómina</div><div class="rw-pts">2,000 pts</div><div class="rw-s">Pago quincenal directo</div></div>
+              <div class="rw-card" onclick="canjear('Playera Traxión',600)"><span class="rw-e">👕</span><div class="rw-n">Playera Traxión</div><div class="rw-pts">600 pts</div><div class="rw-s">Tallas S-M-L-XL-XXL</div></div>
+              <div class="rw-card" onclick="canjear('Termo Traxión',400)"><span class="rw-e">☕</span><div class="rw-n">Termo Traxión</div><div class="rw-pts">400 pts</div><div class="rw-s">750 ml · Acero inoxidable</div></div>
+              <div class="rw-card" onclick="canjear('Chamarra Traxión',1500)"><span class="rw-e">🧥</span><div class="rw-n">Chamarra Traxión</div><div class="rw-pts">1,500 pts</div><div class="rw-s">Edición limitada</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PERFIL OPERADOR -->
+        <div class="ph-pg" id="ph-perfil">
+          <div class="pf-hdr">
+            <div class="pf-av">😎</div>
+            <div class="pf-n">Carlos Mendoza</div>
+            <div class="pf-r">Operador de Transporte de Personal</div>
+            <div class="pf-d">📍 Depósito MTY Norte · 5 años</div>
+          </div>
+          <div class="ph-stats"><div class="ph-stat"><div class="ph-sv">1,840</div><div class="ph-sk">Puntos</div></div><div class="ph-stat"><div class="ph-sv">12</div><div class="ph-sk">Cursos</div></div><div class="ph-stat"><div class="ph-sv">7🔥</div><div class="ph-sk">Racha</div></div><div class="ph-stat"><div class="ph-sv">#3</div><div class="ph-sk">Ranking</div></div></div>
+          <div style="padding:0 16px 14px;">
+            <div style="font-size:12px;font-weight:700;color:var(--blanco);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">🏅 Mis insignias</div>
+            <div class="bgrid"><div class="bi"><span class="bi-i">🚌</span><div class="bi-n">Conductor experto</div></div><div class="bi"><span class="bi-i">🦺</span><div class="bi-n">Seguridad vial</div></div><div class="bi"><span class="bi-i">🔥</span><div class="bi-n">Racha 7 días</div></div><div class="bi"><span class="bi-i">⭐</span><div class="bi-n">Top 5 depósito</div></div><div class="bi"><span class="bi-i">🤝</span><div class="bi-n">Servicio 5★</div></div><div class="bi locked"><span class="bi-i">🥇</span><div class="bi-n">Campeón mes</div></div><div class="bi locked"><span class="bi-i">🎓</span><div class="bi-n">Maestro</div></div><div class="bi locked"><span class="bi-i">🌟</span><div class="bi-n">Embajador</div></div></div>
+            <div style="font-size:12px;font-weight:700;color:var(--blanco);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">📜 Certificaciones</div>
+            <div class="cert-row"><div class="cert-i">🚌</div><div><div class="cert-n">Manejo defensivo</div><div class="cert-d">Vigente hasta Mar 2026</div></div><div class="cert-s v">✓ Vigente</div></div>
+            <div class="cert-row"><div class="cert-i">🦺</div><div><div class="cert-n">Seguridad vial NOM-087</div><div class="cert-d">Vence en 45 días</div></div><div class="cert-s w">⚠ Por vencer</div></div>
+            <div class="cert-row"><div class="cert-i">🚨</div><div><div class="cert-n">Primeros auxilios básicos</div><div class="cert-d">Vigente hasta Dic 2025</div></div><div class="cert-s v">✓ Vigente</div></div>
+            <div class="cert-row"><div class="cert-i">🤝</div><div><div class="cert-n">Atención al pasajero</div><div class="cert-d">Completado Oct 2024</div></div><div class="cert-s v">✓ Vigente</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
+              <button class="ph-btn" onclick="phNav('ph-recompensas','ph-nb-profile')">🎁 Recompensas</button>
+              <button class="ph-btn-ghost" onclick="phNav('ph-ranking','ph-nb-ranking')">🏆 Ranking</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTIFICACIONES OPERADOR -->
+        <div class="ph-pg" id="ph-notif">
+          <div style="padding:14px 18px 10px;"><div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gmd);margin-bottom:10px;cursor:pointer;" onclick="phNav('ph-home','ph-nb-home')">← Volver</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blanco);">🔔 Notificaciones</div></div>
+          <div style="padding:0 18px;">
+            <div style="background:rgba(232,90,10,0.08);border:0.5px solid rgba(232,90,10,0.25);border-radius:11px;padding:12px;margin-bottom:8px;cursor:pointer;" onclick="phNav('ph-lesson','ph-nb-courses')"><div style="font-size:12px;font-weight:600;color:var(--blanco);margin-bottom:3px;">⚠️ Vencimiento en 45 días: NOM-087</div><div style="font-size:11px;color:var(--mu2);">Tu certificado de Seguridad Vial vence pronto. Completa el curso de renovación.</div><div style="font-size:10px;color:var(--mu3);margin-top:3px;">Hace 2 horas</div></div>
+            <div style="background:rgba(208,223,0,0.06);border:0.5px solid rgba(208,223,0,0.15);border-radius:11px;padding:12px;margin-bottom:8px;cursor:pointer;" onclick="phNav('ph-ranking','ph-nb-ranking')"><div style="font-size:12px;font-weight:600;color:var(--blanco);margin-bottom:3px;">🏆 ¡Estás en el Top 3 de tu depósito!</div><div style="font-size:11px;color:var(--mu2);">Completaste 3 módulos esta semana. Sigue así para llegar al #1.</div><div style="font-size:10px;color:var(--mu3);margin-top:3px;">Hace 4 horas</div></div>
+            <div style="background:var(--s2);border:0.5px solid var(--bdr2);border-radius:11px;padding:12px;margin-bottom:8px;cursor:pointer;" onclick="phNav('ph-lesson','ph-nb-courses')"><div style="font-size:12px;font-weight:600;color:var(--blanco);margin-bottom:3px;">📚 Nuevo curso asignado</div><div style="font-size:11px;color:var(--mu2);">Se asignó "Conducción nocturna y en lluvia" con fecha límite 31 de julio.</div><div style="font-size:10px;color:var(--mu3);margin-top:3px;">Ayer</div></div>
+            <div style="background:var(--s2);border:0.5px solid var(--bdr2);border-radius:11px;padding:12px;margin-bottom:8px;cursor:pointer;" onclick="phNav('ph-recompensas','ph-nb-profile')"><div style="font-size:12px;font-weight:600;color:var(--blanco);margin-bottom:3px;">🎁 ¡Ganaste +50 puntos!</div><div style="font-size:11px;color:var(--mu2);">Completaste el módulo "Revisión preoperacional". Ya tienes 1,840 pts acumulados.</div><div style="font-size:10px;color:var(--mu3);margin-top:3px;">Hace 2 días</div></div>
+          </div>
+        </div>
+
+      </div>
+      <!-- PHONE BOTTOM NAV -->
+      <div class="ph-bnav">
+        <button class="ph-nb on" id="ph-nb-home" onclick="phNav('ph-home','ph-nb-home')"><span class="ph-nbi">🏠</span><span class="ph-nbl">Inicio</span></button>
+        <button class="ph-nb" id="ph-nb-courses" onclick="phNav('ph-cursos','ph-nb-courses')"><span class="ph-nbi">📚</span><span class="ph-nbl">Cursos</span></button>
+        <button class="ph-nb" id="ph-nb-ranking" onclick="phNav('ph-ranking','ph-nb-ranking')"><span class="ph-nbi">🏆</span><span class="ph-nbl">Ranking</span></button>
+        <button class="ph-nb" id="ph-nb-profile" onclick="phNav('ph-perfil','ph-nb-profile')"><span class="ph-nbi">👤</span><span class="ph-nbl">Perfil</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main-wrap -->
+</div><!-- /app -->
+
+<script>
+/* ─── DATA ─── */
+let OPS=[
+  {id:'04821',name:'Jorge Ramírez',coord:'M. López',dep:'MTY Sur',nivel:'Intermedio',pct:20,status:'crit',pending:[{cap:'Manejo defensivo',prog:20,dl:'3 días',s:'crit'},{cap:'NOM-087',prog:0,dl:'3 días',s:'crit'}]},
+  {id:'03317',name:'Luis Aguirre',coord:'M. López',dep:'MTY Sur',nivel:'Piloto',pct:0,status:'nostart',pending:[{cap:'NOM-087 Seguridad vial',prog:0,dl:'4 días',s:'crit'},{cap:'Actuación ante accidentes',prog:0,dl:'15 días',s:'risk'}]},
+  {id:'07724',name:'Alejandro Vega',coord:'F. Cruz',dep:'GDL Oriente',nivel:'Intermedio',pct:35,status:'crit',pending:[{cap:'Actuación ante accidente',prog:35,dl:'5 días',s:'crit'},{cap:'Conducción nocturna',prog:20,dl:'22 días',s:'warn'}]},
+  {id:'02209',name:'Carmen Delgado',coord:'F. Cruz',dep:'GDL Oriente',nivel:'Intermedio',pct:55,status:'risk',pending:[{cap:'Revisión preoperacional',prog:55,dl:'6 días',s:'risk'}]},
+  {id:'05530',name:'Martín Soto',coord:'S. Herrera',dep:'GDL Poniente',nivel:'Intermedio',pct:60,status:'risk',pending:[{cap:'Conducción nocturna',prog:60,dl:'7 días',s:'risk'}]},
+  {id:'08812',name:'Patricia Ruiz',coord:'M. López',dep:'MTY Sur',nivel:'Piloto',pct:45,status:'risk',pending:[{cap:'Manejo defensivo',prog:45,dl:'12 días',s:'warn'},{cap:'NOM-087',prog:0,dl:'20 días',s:'warn'}]},
+  {id:'01134',name:'Roberto Núñez',coord:'F. Cruz',dep:'GDL Oriente',nivel:'Piloto',pct:30,status:'crit',pending:[{cap:'Seguridad básica vial',prog:30,dl:'8 días',s:'risk'}]},
+  {id:'06677',name:'Ana Torres',coord:'R. Salinas',dep:'MTY Norte',nivel:'Intermedio',pct:75,status:'warn',pending:[{cap:'Checklist preoperacional',prog:75,dl:'18 días',s:'warn'}]},
+  {id:'09901',name:'David Morales',coord:'S. Herrera',dep:'GDL Poniente',nivel:'Intermedio',pct:80,status:'warn',pending:[{cap:'Actuación ante accidentes',prog:80,dl:'21 días',s:'warn'}]},
+  {id:'03388',name:'Lucía Mendoza',coord:'R. Salinas',dep:'MTY Norte',nivel:'Máster',pct:92,status:'ok',pending:[{cap:'Mentoría de operadores',prog:92,dl:'45 días',s:'ok'}]},
+  {id:'11203',name:'Fernando Ibarra',coord:'R. Salinas',dep:'MTY Norte',nivel:'Intermedio',pct:68,status:'warn',pending:[{cap:'Ahorro de combustible',prog:68,dl:'25 días',s:'warn'}]},
+  {id:'07432',name:'Claudia Moreno',coord:'M. López',dep:'MTY Sur',nivel:'Piloto',pct:5,status:'nostart',pending:[{cap:'Introducción al reglamento',prog:5,dl:'10 días',s:'crit'},{cap:'Protocolo de bienvenida',prog:0,dl:'10 días',s:'crit'}]},
+];
+
+const CAPS=[
+  {name:'Introducción al reglamento',nivel:'Piloto',ob:'Sí',asig:422,comp:398,prog:18,si:6,venc:2,cov:94},
+  {name:'Protocolo de bienvenida',nivel:'Piloto',ob:'Sí',asig:422,comp:410,prog:8,si:4,venc:1,cov:97},
+  {name:'Seguridad básica vial',nivel:'Piloto',ob:'Sí',asig:422,comp:389,prog:22,si:11,venc:5,cov:92},
+  {name:'Manejo defensivo carretera',nivel:'Intermedio',ob:'Sí',asig:422,comp:280,prog:89,si:53,venc:18,cov:66},
+  {name:'Conducción nocturna y lluvia',nivel:'Intermedio',ob:'Sí',asig:422,comp:198,prog:110,si:114,venc:22,cov:47},
+  {name:'Checklist preoperacional',nivel:'Intermedio',ob:'Sí',asig:422,comp:310,prog:74,si:38,venc:11,cov:73},
+  {name:'Actuación ante accidentes',nivel:'Intermedio',ob:'Sí',asig:422,comp:244,prog:98,si:80,venc:14,cov:58},
+  {name:'NOM-087 Seguridad vial',nivel:'Intermedio',ob:'Sí',asig:422,comp:212,prog:101,si:109,venc:21,cov:50},
+  {name:'Ahorro de combustible',nivel:'Intermedio',ob:'No',asig:422,comp:190,prog:120,si:112,venc:3,cov:45},
+  {name:'Mentoría de operadores',nivel:'Máster',ob:'No',asig:89,comp:34,prog:28,si:27,venc:0,cov:38},
+];
+
+const ALERTAS=[
+  {type:'crit',icon:'🔴',title:'18 operadores con vencimientos en menos de 7 días',body:'Acción inmediata requerida. Fernando Cruz (8 ops.) y Mariana López (6 ops.) son los coordinadores más afectados.',action:'Ver operadores',dest:'operadores'},
+  {type:'crit',icon:'🔴',title:'23 operadores no han iniciado ningún módulo',body:'Llevan más de 30 días registrados sin actividad en la plataforma. Riesgo alto de incumplimiento Q2.',action:'Ver lista',dest:'operadores'},
+  {type:'risk',icon:'🟠',title:'GDL Oriente — cumplimiento 62%, muy por debajo de meta',body:'Fernando Cruz tiene 47 operadores con capacitaciones pendientes. Meta Q2: 85%. Gap actual: 23 pts.',action:'Ver coordinador',dest:'org'},
+  {type:'risk',icon:'🟠',title:'Conducción nocturna y lluvia — cobertura crítica 47%',body:'Solo 198 de 422 operadores completaron este curso obligatorio. 22 certificaciones vencen en los próximos 30 días.',action:'Ver capacitación',dest:'capacitaciones'},
+  {type:'warn',icon:'🟡',title:'Mariana López — 28 pendientes en MTY Sur',body:'Cumplimiento cayó de 79% a 71% en el último mes. Requiere plan de acción inmediato antes de cierre Q2.',action:'Ver equipo',dest:'org'},
+  {type:'warn',icon:'🟡',title:'NOM-087 — 21 certificaciones por vencer en 30 días',body:'Operadores en proceso de renovación. Priorizar asignación y completar antes del 31 de julio.',action:'Ver capacitación',dest:'capacitaciones'},
+  {type:'ok',icon:'🟢',title:'Ricardo Salinas supera meta mensual — 89%',body:'Depósito MTY Norte logró 89% de cumplimiento, superando la meta de 85%. Se recomienda reconocimiento formal.',action:'Ver detalle',dest:'org'},
+];
+
+const CURSOS_MOVIL=[
+  {em:'🚌',cat:'Conducción',nm:'Manejo defensivo en carretera federal',nivel:'Intermedio',ob:true,dur:'18 min',pct:75,status:'warn'},
+  {em:'🌙',cat:'Conducción',nm:'Conducción nocturna y en condiciones de lluvia',nivel:'Intermedio',ob:true,dur:'15 min',pct:0,status:'nostart'},
+  {em:'🦺',cat:'Seguridad vial',nm:'Distancias de frenado y puntos ciegos',nivel:'Intermedio',ob:true,dur:'12 min',pct:50,status:'warn'},
+  {em:'🚧',cat:'Seguridad vial',nm:'Zonas de obra y señalización vial',nivel:'Intermedio',ob:false,dur:'8 min',pct:0,status:'new'},
+  {em:'🔧',cat:'La unidad',nm:'Revisión preoperacional diaria — checklist',nivel:'Intermedio',ob:true,dur:'20 min',pct:30,status:'warn'},
+  {em:'⛽',cat:'La unidad',nm:'Ahorro de combustible y conducción eficiente',nivel:'Intermedio',ob:false,dur:'14 min',pct:0,status:'nostart'},
+  {em:'🤝',cat:'Pasajeros',nm:'Protocolo de abordaje y atención al cliente',nivel:'Piloto',ob:true,dur:'16 min',pct:90,status:'ok'},
+  {em:'🚨',cat:'Emergencias',nm:'Actuación ante accidente de tránsito',nivel:'Intermedio',ob:true,dur:'20 min',pct:0,status:'nostart'},
+];
+
+/* ─── NAVIGATION ─── */
+let currentPage='dashboard';
+let currentBStep=1;
+let phCkCount=5;
+const phCkTotal=10;
+
+function navTo(page){
+  // Hide all pages - reset any inline display
+  document.querySelectorAll('.page').forEach(p=>{
+    p.classList.remove('on');
+    p.style.display='';
+  });
+  document.querySelectorAll('.sn').forEach(n=>n.classList.remove('on'));
+  const pg=document.getElementById('p-'+page);
+  if(pg){
+    pg.classList.add('on');
+    // Force correct display type
+    if(pg.classList.contains('flex-page')||pg.classList.contains('phone-page')){
+      pg.style.display='flex';
+    } else {
+      pg.style.display='block';
+    }
+  }
+  const sn=document.getElementById('sn-'+page);
+  if(sn) sn.classList.add('on');
+  document.getElementById('content').scrollTop=0;
+  currentPage=page;
+  if(page==='operadores') renderOps('all');
+  if(page==='capacitaciones') renderCaps();
+  if(page==='alertas') renderAlertas();
+  if(page==='app-operador'){renderCursosMovil();phNav('ph-home','ph-nb-home');}
+  if(page==='crear'){document.getElementById('builder-sidebar').classList.add('hidden');goBStep(1,false);}
+}
+
+/* ─── OPS TABLE ─── */
+let currentFilter='all';
+function renderOps(filter){
+  currentFilter=filter;
+  const label=document.getElementById('op-coord-label');
+  if(filter==='all') label.textContent='Todos los depósitos';
+  else label.textContent='Depósito: '+filter;
+  const data=OPS.filter(o=>{
+    if(filter==='all') return true;
+    if(filter==='crit') return o.status==='crit';
+    if(filter==='risk') return o.status==='risk'||o.status==='crit'||o.status==='nostart';
+    if(filter==='nostart') return o.status==='nostart';
+    return o.dep===filter;
+  });
+  const tbody=document.getElementById('ops-tbody');
+  tbody.innerHTML=data.map(o=>{
+    const sc=o.status==='ok'?'ok':o.status==='warn'?'warn':o.status==='risk'?'risk':'crit';
+    const dl=o.pending[0];
+    const pends=o.pending.map(p=>`<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;"><span class="badge b-${p.s}" style="font-size:9px;">${p.dl}</span><span style="font-size:11px;color:rgba(255,255,255,0.7);">${p.cap}</span></div>`).join('');
+    const cr=o.status==='crit'||o.status==='nostart'?' crit-r':'';
+    return `<tr class="${cr}"><td><b style="color:var(--blanco)">${o.name}</b><br><span style="color:var(--mu2);font-size:11px;">#${o.id}</span></td><td style="color:var(--mu)">${o.coord}</td><td style="color:var(--mu)">${o.dep}</td><td>${pends}</td><td><span class="badge b-${dl.s}">⏰ ${dl.dl}</span></td><td><span class="badge b-na">${o.nivel}</span></td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-${sc}" style="width:${o.pct}%"></div></div><span class="pp-pct pct-${sc}">${o.pct}%</span></div></td><td><button class="row-btn" onclick="showOpDetail('${o.name}','#${o.id}','${o.dep}','${o.coord}')">Ver →</button><button class="row-btn" style="margin-left:5px;" onclick="showToast('📱 Notificación enviada por WhatsApp a ${o.name}')">📱 Notificar</button></td></tr>`;
+  }).join('');
+}
+
+function filterOps(filter,btn){
+  document.querySelectorAll('#op-filter-bar button').forEach(b=>{b.className='btn btn-ghost';});
+  btn.className='btn btn-primary';
+  document.getElementById('op-detail-panel').classList.add('hidden');
+  renderOps(filter);
+}
+
+function searchOps(val){
+  const v=val.toLowerCase();
+  const data=OPS.filter(o=>o.name.toLowerCase().includes(v)||o.id.includes(v)||o.dep.toLowerCase().includes(v)||o.coord.toLowerCase().includes(v));
+  const tbody=document.getElementById('ops-tbody');
+  tbody.innerHTML=data.map(o=>{
+    const sc=o.status==='ok'?'ok':o.status==='warn'?'warn':o.status==='risk'?'risk':'crit';
+    const dl=o.pending[0];
+    const pends=o.pending.map(p=>`<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;"><span class="badge b-${p.s}" style="font-size:9px;">${p.dl}</span><span style="font-size:11px;color:rgba(255,255,255,0.7);">${p.cap}</span></div>`).join('');
+    const cr=o.status==='crit'||o.status==='nostart'?' crit-r':'';
+    return `<tr class="${cr}"><td><b style="color:var(--blanco)">${o.name}</b><br><span style="color:var(--mu2);font-size:11px;">#${o.id}</span></td><td style="color:var(--mu)">${o.coord}</td><td style="color:var(--mu)">${o.dep}</td><td>${pends}</td><td><span class="badge b-${dl.s}">⏰ ${dl.dl}</span></td><td><span class="badge b-na">${o.nivel}</span></td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-${sc}" style="width:${o.pct}%"></div></div><span class="pp-pct pct-${sc}">${o.pct}%</span></div></td><td><button class="row-btn" onclick="showOpDetail('${o.name}','#${o.id}','${o.dep}','${o.coord}')">Ver →</button></td></tr>`;
+  }).join('');
+}
+
+function showOpDetail(name,id,dep,coord){
+  const o=OPS.find(x=>x.name===name);
+  if(!o) return;
+  const sc=o.status==='ok'?'ok':o.status==='warn'?'warn':o.status==='risk'?'risk':'crit';
+  const caps=o.pending.map(p=>{
+    const barColor=p.s==='ok'?'var(--lima)':p.s==='warn'?'var(--lima2)':p.s==='risk'?'var(--risk)':'var(--crit)';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--mu3);"><span style="font-size:20px;">📋</span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:4px;">${p.cap}</div><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;max-width:100px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;"><div style="height:100%;border-radius:2px;width:${p.prog}%;background:${barColor};"></div></div><span style="font-size:12px;font-weight:600;color:${barColor};">${p.prog}%</span></div></div><div style="font-size:11px;color:var(--mu2);white-space:nowrap;">⏰ Vence en ${p.dl}</div><span class="badge b-${p.s}">${p.s==='ok'?'Al corriente':p.s==='warn'?'En progreso':p.s==='risk'?'En riesgo':p.s==='crit'?'Crítico':'Sin iniciar'}</span></div>`;
+  }).join('');
+  const statusLabel=o.status==='ok'?'Al corriente':o.status==='warn'?'En progreso':o.status==='risk'?'En riesgo':o.status==='nostart'?'Sin iniciar':'Crítico';
+  document.getElementById('op-detail-content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:0.5px solid var(--mu3);">
+      <div class="dp-av">😎</div>
+      <div style="flex:1;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--blanco);">${o.name}</div><div style="font-size:12px;color:var(--mu2);margin-top:2px;">Operador #${o.id} · ${o.dep} · Coord: ${o.coord}</div><div style="display:inline-flex;align-items:center;gap:5px;background:rgba(208,223,0,0.08);border:0.5px solid var(--bdr);color:var(--lima);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;margin-top:5px;">🎓 ${o.nivel} · ${o.pct}% cumplimiento</div></div>
+      <div style="display:flex;gap:7px;">
+        <button class="btn btn-primary" onclick="showToast('📱 Notificación enviada por WhatsApp a ${o.name}')">📱 Notificar</button>
+        <button class="btn btn-ghost" onclick="showToast('📅 Extensión de 7 días aprobada para ${o.name}')">📅 Extender plazo</button>
+        <button class="btn btn-ghost" style="padding:8px 10px;" onclick="document.getElementById('op-detail-panel').classList.add('hidden')">✕</button>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mu2);margin-bottom:10px;">Capacitaciones pendientes (${o.pending.length})</div>
+    ${caps}`;
+  document.getElementById('op-detail-panel').classList.remove('hidden');
+  document.getElementById('content').scrollTop=0;
+}
+
+function drillCoord(dep){
+  navTo('operadores');
+  renderOps(dep);
+  document.querySelectorAll('#op-filter-bar button').forEach(b=>b.className='btn btn-ghost');
+}
+
+/* ─── CAPS TABLE ─── */
+const NB={'Piloto':'b-ok','Intermedio':'b-blue','Máster':'b-na'};
+function renderCaps(){
+  document.getElementById('caps-tbody').innerHTML=CAPS.map(c=>{
+    const sc=c.cov>=90?'ok':c.cov>=70?'warn':c.cov>=50?'risk':'crit';
+    const vc=c.venc===0?'b-na':c.venc<=5?'b-crit':c.venc<=15?'b-risk':'b-warn';
+    return `<tr><td><b style="color:var(--blanco)">${c.name}</b></td><td><span class="badge ${NB[c.nivel]}">${c.nivel}</span></td><td>${c.ob}</td><td>${c.asig}</td><td style="color:var(--lima)">${c.comp}</td><td style="color:var(--lima2)">${c.prog}</td><td style="color:var(--crit)">${c.si}</td><td><span class="badge ${vc}">${c.venc}</span></td><td><div class="pp"><div class="pp-bar"><div class="prog-fill f-${sc}" style="width:${c.cov}%"></div></div><span class="pp-pct pct-${sc}">${c.cov}%</span></div></td><td><button class="row-btn" onclick="showToast('Abriendo detalle: ${c.name}')">Ver →</button><button class="row-btn" style="margin-left:5px;" onclick="showToast('📤 Asignando ${c.name} a todos los operadores pendientes...')">Asignar</button></td></tr>`;
+  }).join('');
+}
+
+/* ─── ALERTAS ─── */
+function renderAlertas(){
+  const c={'crit':'rgba(232,90,10,0.3)','risk':'rgba(245,155,0,0.2)','warn':'rgba(227,233,53,0.15)','ok':'rgba(208,223,0,0.15)'};
+  document.getElementById('alertas-list').innerHTML=ALERTAS.map(a=>`
+    <div style="background:var(--s2);border:0.5px solid ${c[a.type]};border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;">
+      <span style="font-size:20px;flex-shrink:0;">${a.icon}</span>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--blanco);margin-bottom:4px;">${a.title}</div><div style="font-size:12px;color:var(--mu);line-height:1.5;">${a.body}</div></div>
+      <button class="row-btn" style="flex-shrink:0;white-space:nowrap;" onclick="navTo('${a.dest}')">${a.action} →</button>
+    </div>`).join('');
+}
+
+/* ─── COURSE BUILDER ─── */
+function goBStep(n,animate=true){
+  for(let i=1;i<=5;i++){
+    const t=document.getElementById('bst'+i);
+    t.classList.remove('active','done');
+    if(i<n) t.classList.add('done');
+    else if(i===n) t.classList.add('active');
+  }
+  document.querySelectorAll('.bs-pg').forEach(p=>p.classList.remove('on'));
+  document.getElementById('bs'+n).classList.add('on');
+  document.getElementById('builder-sidebar').classList.toggle('hidden',n!==2);
+  const btn=document.getElementById('bld-next-btn');
+  btn.textContent=n===5?'Publicar 🚀':'Siguiente →';
+  const rvn=document.getElementById('rv-name');
+  if(rvn) rvn.textContent=document.getElementById('ctitle').value||'(sin título)';
+  document.querySelector('.builder-ed').scrollTop=0;
+  currentBStep=n;
+}
+function nextBStep(){if(currentBStep===5){publishCourse();}else{goBStep(currentBStep+1);}}
+function publishCourse(){
+  const t=document.getElementById('ctitle').value||'Manejo defensivo en carretera federal';
+  document.getElementById('bs5-review').style.display='none';
+  document.getElementById('bs5-success').classList.add('on');
+  document.getElementById('sw-name').textContent='"'+t+'"';
+  document.getElementById('bld-next-btn').disabled=true;
+  document.getElementById('bld-next-btn').textContent='✓ Publicado';
+}
+function resetBuilder(){
+  document.getElementById('bs5-review').style.display='block';
+  document.getElementById('bs5-success').classList.remove('on');
+  document.getElementById('ctitle').value='';
+  document.getElementById('builder-title').textContent='Sin título';
+  document.getElementById('bld-next-btn').disabled=false;
+  goBStep(1);
+}
+
+function toggleLesson(id){
+  const b=document.getElementById(id);
+  const c=document.getElementById(id+'-c');
+  const open=b.classList.contains('open');
+  b.classList.toggle('open',!open);
+  c.textContent=open?'▸':'▾';
+}
+
+function markOpt(el){
+  el.closest('.quiz-q').querySelectorAll('.q-opt').forEach(o=>o.classList.remove('ok'));
+  el.classList.add('ok');
+  showToast('Marcada como respuesta correcta: "'+el.querySelector('.q-txt').textContent+'"');
+}
+
+function toggleMod(el){el.classList.toggle('active');}
+function selectLesson(el){el.closest('.les-list').querySelectorAll('.les-row').forEach(r=>r.classList.remove('active'));el.classList.add('active');}
+function selRc(el){el.closest('.rg').querySelectorAll('.rc').forEach(c=>{c.classList.remove('sel');c.querySelector('.rc-chk').textContent='';});el.classList.add('sel');el.querySelector('.rc-chk').textContent='✓';}
+function togAud(el){el.classList.toggle('sel');el.querySelector('.ac-chk').textContent=el.classList.contains('sel')?'✓':'';}
+
+function openLessonModal(){
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-t">Agregar lección</div>
+    <div class="modal-s">Selecciona el tipo de contenido para esta lección.</div>
+    <div class="lesson-type-grid">
+      <div class="ltc sel" onclick="selLT(this)"><div class="ltc-i">🎥</div><div class="ltc-n">Video</div><div class="ltc-d">MP4, YouTube, Vimeo</div></div>
+      <div class="ltc" onclick="selLT(this)"><div class="ltc-i">❓</div><div class="ltc-n">Quiz</div><div class="ltc-d">Opción múltiple</div></div>
+      <div class="ltc" onclick="selLT(this)"><div class="ltc-i">📄</div><div class="ltc-n">Documento</div><div class="ltc-d">PDF, Word, PPT</div></div>
+      <div class="ltc" onclick="selLT(this)"><div class="ltc-i">✅</div><div class="ltc-n">Tarea</div><div class="ltc-d">Sube evidencia</div></div>
+      <div class="ltc" onclick="selLT(this)"><div class="ltc-i">🎙️</div><div class="ltc-n">Audio</div><div class="ltc-d">Solo audio / voz</div></div>
+      <div class="ltc" onclick="selLT(this)"><div class="ltc-i">📦</div><div class="ltc-n">SCORM</div><div class="ltc-d">Paquete SCORM</div></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmLesson()">Agregar →</button>
+    </div>`;
+  document.getElementById('modal-bg').classList.remove('hidden');
+}
+
+function selLT(el){document.querySelectorAll('.ltc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function confirmLesson(){const t=document.querySelector('.ltc.sel .ltc-n').textContent;closeModal();showToast('✓ Lección de tipo '+t+' agregada. Sube el contenido.');}
+function closeModal(){document.getElementById('modal-bg').classList.add('hidden');}
+document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+/* ─── MODE SWITCH ─── */
+let mode='hr';
+function switchMode(){
+  mode=mode==='hr'?'op':'hr';
+  document.getElementById('mode-toggle').textContent=mode==='hr'?'👔 Vista RRHH':'📱 App Operador';
+  const _u=nexoUser;
+  document.getElementById('mode-label').textContent=mode==='hr'?'Vista RRHH: '+(_u?_u.nombre:'Erika Vargas'):'Operador: '+(_u?_u.nombre:'Carlos Mendoza');
+  navTo(mode==='hr'?'dashboard':'app-operador');
+}
+
+/* ─── PHONE NAVIGATION ─── */
+function phNav(pgId,nbId){
+  document.querySelectorAll('.ph-pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ph-nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById(pgId).classList.add('on');
+  const nb=document.getElementById(nbId);
+  if(nb) nb.classList.add('on');
+  const scr=document.getElementById('ph-screen');
+  if(scr) scr.scrollTop=0;
+}
+
+function swTab(el,group){
+  el.closest('.itabs').querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* ─── LESSON QUIZ ─── */
+function showQuiz(){
+  document.getElementById('lesson-content').classList.add('hidden');
+  document.getElementById('quiz-section').classList.remove('hidden');
+}
+function pickOpt(el,correct){
+  document.querySelectorAll('.ph-opt').forEach(o=>{o.classList.remove('ok','no');o.style.pointerEvents='none';});
+  if(correct) el.classList.add('ok');
+  else{el.classList.add('no');document.getElementById('correct-opt').classList.add('ok');}
+  setTimeout(()=>{
+    document.getElementById('quiz-section').classList.add('hidden');
+    document.getElementById('res-screen').classList.add('on');
+  },900);
+}
+function resetLesson(){
+  document.getElementById('lesson-content').classList.remove('hidden');
+  document.getElementById('quiz-section').classList.add('hidden');
+  document.getElementById('res-screen').classList.remove('on');
+  document.querySelectorAll('.ph-opt').forEach(o=>{o.classList.remove('ok','no');o.style.pointerEvents='';});
+}
+
+/* ─── CHECKLIST ─── */
+function togCk(el){
+  el.classList.toggle('chk');
+  const box=el.querySelector('.ck-box');
+  const isChk=el.classList.contains('chk');
+  box.textContent=isChk?'✓':'';
+  phCkCount+=isChk?1:-1;
+  document.getElementById('ck-count').textContent=phCkCount+' / '+phCkTotal+' ítems completados';
+}
+function submitChecklist(){
+  if(phCkCount<phCkTotal){showToast('Aún tienes '+(phCkTotal-phCkCount)+' ítems pendientes. Completa todos primero.');}
+  else{showToast('✅ Reporte enviado. +30 puntos ganados. ¡Tu unidad está lista para salir!');phNav('ph-home','ph-nb-home');}
+}
+
+/* ─── REWARDS ─── */
+let phPts=1840;
+function canjear(nombre,pts){
+  if(pts>phPts){showToast('⚠️ Puntos insuficientes. Necesitas: '+pts+' pts · Tienes: '+phPts+' pts');}
+  else{phPts-=pts;showToast('🎉 ¡Canje exitoso! '+nombre+' · -'+pts+' pts · Te quedan '+phPts+' pts');}
+}
+
+/* ─── CURSOS MOVIL ─── */
+function renderCursosMovil(){
+  document.getElementById('cursos-list').innerHTML=CURSOS_MOVIL.map(c=>{
+    const sc=c.status==='ok'?'var(--lima)':c.status==='warn'?'var(--lima2)':c.status==='new'?'var(--gmd)':'rgba(255,255,255,0.2)';
+    const bar=c.status==='ok'?'var(--lima)':c.status==='warn'?'var(--lima2)':'rgba(255,255,255,0.15)';
+    const pctlbl=c.pct>0?c.pct+'%':c.status==='new'?'Nuevo':'0%';
+    return `<div style="background:var(--s2);border:0.5px solid var(--bdr2);border-radius:14px;margin-bottom:10px;overflow:hidden;cursor:pointer;" onclick="phNav('ph-lesson','ph-nb-courses')">
+      <div style="height:80px;background:linear-gradient(135deg,#0F1500,#1A2800);display:flex;align-items:center;justify-content:center;font-size:38px;position:relative;"><div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 55%);"></div><span style="position:relative;z-index:1;">${c.em}</span><div style="position:absolute;bottom:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,var(--oliva),var(--lima));"></div></div>
+      <div style="padding:11px 13px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--lima);margin-bottom:3px;">${c.cat} · ${c.nivel}</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--blanco);margin-bottom:7px;line-height:1.2;">${c.nm}</div><div style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${c.ob?'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(208,223,0,0.12);color:var(--lima);">Obligatorio</span>':'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.05);color:var(--gmd);">Opcional</span>'}<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.05);color:var(--gmd);">${c.dur}</span></div><div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:${sc};text-align:right;">${pctlbl}</div><div style="font-size:9px;color:var(--mu2);text-align:right;">${c.pct>0?'en progreso':c.status==='new'?'nuevo':'sin iniciar'}</div></div></div></div></div>`;
+  }).join('');
+}
+
+/* ─── TOAST ─── */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+/* ─── NEXO INTEGRATION ─── */
+let nexoUser = null;
+
+function set(id, val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+function setVal(id, val){ const el=document.getElementById(id); if(el) el.value=val; }
+function setHTML(id, val){ const el=document.getElementById(id); if(el) el.innerHTML=val; }
+
+async function initNexo() {
+  // 1. Leer sesión de NEXO
+  try { const r=localStorage.getItem('nexo_user'); if(r) nexoUser=JSON.parse(r); } catch(e){}
+
+  if (!nexoUser) return;
+
+  const nombre   = nexoUser.nombre || '';
+  const email    = nexoUser.email  || '';
+  const rol      = nexoUser.rol    || 'Coordinador';
+  const initials = nombre.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+  // 2. Topbar: avatar + label
+  const av = document.querySelector('.tb-av');
+  if (av) av.textContent = initials;
+  const lbl = document.getElementById('mode-label');
+  if (lbl) lbl.textContent = 'Vista RRHH: ' + nombre;
+
+  // 3. Cargar operadores reales
+  if (nexoUser.nomina) {
+    try {
+      const res = await fetch('/api/lms/operadores?nomina=' + encodeURIComponent(nexoUser.nomina));
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) OPS = data;
+      }
+    } catch(e) {}
+  }
+
+  // 4. Calcular métricas con OPS reales
+  const total  = OPS.length;
+  const okN    = OPS.filter(o=>o.status==='ok').length;
+  const critN  = OPS.filter(o=>o.status==='crit'||o.status==='nostart').length;
+  const riskN  = OPS.filter(o=>o.status==='risk'||o.status==='warn').length;
+  const avgPct = total > 0 ? Math.round(OPS.reduce((s,o)=>s+o.pct,0)/total) : 0;
+  const gap    = Math.max(0, 95 - avgPct);
+
+  // 5. Dashboard banner
+  const dTitle = document.querySelector('#p-dashboard .mb-title');
+  if (dTitle) dTitle.textContent = 'Dashboard — ' + nombre;
+  const dSub = document.querySelector('#p-dashboard .mb-sub');
+  if (dSub) dSub.textContent = 'Q2 2025 · ' + total + ' operadores activos';
+
+  // 6. KPIs del dashboard
+  const kpiVals = document.querySelectorAll('#p-dashboard .kpi-val');
+  if (kpiVals[0]) kpiVals[0].innerHTML = avgPct + '<span style="font-size:16px;">%</span>';
+  if (kpiVals[1]) kpiVals[1].innerHTML = okN + '<span style="font-size:16px;">/' + total + '</span>';
+  if (kpiVals[2]) kpiVals[2].textContent = riskN;
+  if (kpiVals[3]) kpiVals[3].textContent = critN;
+  const kpiSubs = document.querySelectorAll('#p-dashboard .kpi-sub');
+  if (kpiSubs[0]) kpiSubs[0].textContent = gap > 0 ? 'Meta Q2: 95% · ▼ '+gap+' pts bajo meta' : '✓ Meta Q2 alcanzada';
+  if (kpiSubs[1]) kpiSubs[1].textContent = (total-okN) + ' con pendientes activos';
+  if (kpiSubs[3]) kpiSubs[3].textContent = critN > 0 ? 'Acción inmediata requerida' : 'Sin operadores críticos';
+
+  // 7. Organigrama — regenerar con datos reales
+  updateOrgChart();
+
+  // 8. Alertas — regenerar con datos reales
+  updateAlertas();
+
+  // 9. Página de perfil RRHH
+  const pHR = document.getElementById('p-perfil-hr');
+  if (pHR) {
+    // Avatar con iniciales
+    const pfAv = pHR.querySelector('div[style*="width:60px"]');
+    if (pfAv) pfAv.textContent = initials;
+    // Nombre display
+    const allDivs = pHR.querySelectorAll('div');
+    allDivs.forEach(d => {
+      if (d.textContent.trim() === 'Erika Vargas' && d.children.length === 0) d.textContent = nombre;
+      if (d.textContent.trim() === 'Gerente Regional de RRHH' && d.children.length === 0) d.textContent = rol;
+    });
+    // Inputs
+    const inputs = pHR.querySelectorAll('input.fi');
+    if (inputs[0]) inputs[0].value = nombre;
+    if (inputs[1]) inputs[1].value = email;
+    // Resumen: operadores a cargo
+    const resNums = pHR.querySelectorAll('div[style*="font-size:24px"]');
+    resNums.forEach(el => {
+      if (el.nextElementSibling && el.nextElementSibling.textContent.includes('Operadores a cargo'))
+        el.textContent = total;
+      if (el.nextElementSibling && el.nextElementSibling.textContent.includes('Cumplimiento'))
+        el.textContent = avgPct + '%';
+    });
+  }
+}
+
+/* ─── ORG CHART con datos reales ─── */
+function updateOrgChart() {
+  const orgPage = document.getElementById('p-org');
+  if (!orgPage || !nexoUser || !OPS.length) return;
+
+  const nombre = nexoUser.nombre;
+  const total  = OPS.length;
+  const avgPct = Math.round(OPS.reduce((s,o)=>s+o.pct,0)/total);
+  const sc0    = avgPct>=85?'ok':avgPct>=65?'warn':avgPct>=45?'risk':'crit';
+
+  // Agrupar operadores por departamento
+  const deptMap = {};
+  OPS.forEach(o=>{
+    if(!deptMap[o.dep]) deptMap[o.dep]=[];
+    deptMap[o.dep].push(o);
+  });
+  const depts = Object.entries(deptMap).map(([dep,ops])=>({
+    dep,
+    count: ops.length,
+    pct:   Math.round(ops.reduce((s,o)=>s+o.pct,0)/ops.length),
+    crit:  ops.filter(o=>o.status==='crit'||o.status==='nostart').length,
+  }));
+
+  // Título de página
+  const titleEl = orgPage.querySelector('div[style*="font-size:24px"]');
+  if(titleEl) titleEl.textContent = 'Coordinador: '+nombre;
+
+  // Caja superior
+  const topBox = orgPage.querySelector('div[style*="display:inline-block"]');
+  if(topBox) topBox.innerHTML=`
+    <div class="tag">Coordinador</div>
+    <div style="font-size:15px;font-weight:700;color:var(--blanco);margin-top:2px;">${nombre}</div>
+    <div style="font-size:11px;color:var(--mu2);">${depts.length} deptos · ${total} operadores</div>
+    <div style="font-family:'Inter',sans-serif;font-size:20px;font-weight:800;color:var(--${sc0==='ok'?'ok':sc0==='warn'?'warn':sc0==='risk'?'risk':'crit'});">${avgPct}%</div>`;
+
+  // Grid de departamentos
+  const grid = orgPage.querySelector('div[style*="grid-template-columns:repeat(4,1fr)"]');
+  if(grid){
+    const cols = Math.min(depts.length,4);
+    grid.style.gridTemplateColumns='repeat('+cols+',1fr)';
+    grid.innerHTML=depts.map(d=>{
+      const sc=d.pct>=85?'ok':d.pct>=65?'warn':d.pct>=45?'risk':'crit';
+      return `<div style="display:flex;flex-direction:column;align-items:center;">
+        <div style="width:1.5px;height:18px;background:var(--mu3);"></div>
+        <div class="cc" style="width:100%;" onclick="drillCoord('${d.dep}')">
+          <div class="cc-hdr">
+            <div class="cc-av" style="font-size:15px;">🚌</div>
+            <div><div class="cc-nm" style="font-size:12px;">${d.dep}</div><div class="cc-sub">${d.count} ops.</div></div>
+            <div class="cc-pct pct-${sc}" style="font-size:18px;">${d.pct}%</div>
+          </div>
+          <div class="cc-body"><div class="prog-bar"><div class="prog-fill f-${sc}" style="width:${d.pct}%"></div></div></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Tabla KPI
+  const tbody = orgPage.querySelector('tbody');
+  if(tbody){
+    tbody.innerHTML=depts.map(d=>{
+      const sc=d.pct>=85?'ok':d.pct>=65?'warn':d.pct>=45?'risk':'crit';
+      return `<tr>
+        <td><b style="color:var(--blanco)">${nombre}</b></td>
+        <td style="color:var(--mu)">${d.dep}</td>
+        <td>${d.count}</td>
+        <td>—</td><td>—</td><td>—</td>
+        <td><span class="badge b-${d.crit>0?'crit':'ok'}">${d.crit>0?d.crit+' alertas':'✓ ok'}</span></td>
+        <td><div class="pp"><div class="pp-bar"><div class="prog-fill f-${sc}" style="width:${d.pct}%"></div></div><span class="pp-pct pct-${sc}">${d.pct}%</span></div></td>
+        <td><button class="row-btn" onclick="drillCoord('${d.dep}')">Ver equipo →</button></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+/* ─── ALERTAS con datos reales ─── */
+function updateAlertas() {
+  if (!nexoUser || !OPS.length) return;
+  const nombre = nexoUser.nombre;
+  const total  = OPS.length;
+  const critOps  = OPS.filter(o=>o.status==='crit'||o.status==='nostart');
+  const riskOps  = OPS.filter(o=>o.status==='risk');
+  const avgPct   = Math.round(OPS.reduce((s,o)=>s+o.pct,0)/total);
+  const alertas  = [];
+
+  if(critOps.length>0)
+    alertas.push({type:'crit',icon:'🔴',
+      title: critOps.length+' operadores con capacitaciones críticas o sin iniciar',
+      body: 'Requieren atención inmediata: '+critOps.slice(0,3).map(o=>o.name).join(', ')+(critOps.length>3?' y '+(critOps.length-3)+' más.':'.'),
+      action:'Ver operadores',dest:'operadores'});
+
+  if(riskOps.length>0)
+    alertas.push({type:'risk',icon:'🟠',
+      title: riskOps.length+' operadores en riesgo de incumplimiento',
+      body: 'Cumplimiento entre 40–69%. Acción recomendada antes de cierre de Q2.',
+      action:'Ver operadores',dest:'operadores'});
+
+  if(avgPct<85)
+    alertas.push({type:'warn',icon:'🟡',
+      title: nombre+' — cumplimiento '+avgPct+'%, meta Q2: 85%',
+      body: 'Gap de '+(85-avgPct)+' puntos para alcanzar la meta. Revisar operadores con mayor rezago.',
+      action:'Ver organigrama',dest:'org'});
+  else
+    alertas.push({type:'ok',icon:'🟢',
+      title: nombre+' supera meta mensual — '+avgPct+'%',
+      body: 'Tu equipo alcanzó '+avgPct+'% de cumplimiento, superando la meta de 85%.',
+      action:'Ver detalle',dest:'org'});
+
+  // Reemplazar ALERTAS global y re-renderizar si es la página activa
+  ALERTAS.splice(0, ALERTAS.length, ...alertas);
+  if(currentPage==='alertas') renderAlertas();
+
+  // Badge del sidebar
+  const badge = document.querySelector('#sn-alertas .sn-badge');
+  if(badge) badge.textContent = critOps.length + riskOps.length;
+}
+
+/* ─── INIT ─── */
+initNexo().then(() => navTo('dashboard'));
+</script>
+</body>
+</html>

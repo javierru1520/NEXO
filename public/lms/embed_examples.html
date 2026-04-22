@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Traxión LMS — Ejemplos de integración</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 24px; color: #1a1a1a; line-height: 1.7; }
+  h1 { border-bottom: 4px solid #D0DF00; padding-bottom: 10px; }
+  h2 { margin-top: 40px; color: #333; }
+  h3 { color: #555; margin-top: 24px; }
+  code { background: #f3f3f0; border: 1px solid #ddd; border-radius: 4px; padding: 2px 7px; font-size: 13px; }
+  pre { background: #0C0C08; color: #D0DF00; border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  pre .cm { color: #63666A; }
+  pre .hl { color: #E3E935; }
+  .badge { display:inline-block; background:#D0DF00; color:#000; border-radius:4px; padding:2px 9px; font-size:12px; font-weight:700; margin-right:5px; }
+  .badge-blue { background:#3BAAFF; color:#000; }
+  .box { border: 1px solid #ddd; border-radius: 10px; padding: 18px 22px; margin: 16px 0; background: #fafaf8; }
+  .rec { background: #fffbe6; border-left: 4px solid #D0DF00; padding: 12px 16px; border-radius: 4px; margin: 12px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th { background: #0C0C08; color: #D0DF00; padding: 9px 14px; text-align: left; }
+  td { padding: 9px 14px; border-bottom: 1px solid #eee; }
+  tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<h1>🚌 Traxión Academia del Operador — Guía de integración</h1>
+<p><span class="badge">v1.0</span> <span class="badge badge-blue">Single-file HTML</span> Sin dependencias locales · Funciona offline</p>
+
+<div class="rec">
+  <strong>TL;DR:</strong> La forma más rápida y compatible es el <strong>iframe</strong>. Una sola línea y funciona en cualquier sistema.
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>Estructura de archivos</h2>
+<pre>traxion_lms/
+├── index.html              <span class="cm">← App completa standalone (abrir directo)</span>
+├── assets/
+│   ├── css/
+│   │   └── styles.css      <span class="cm">← Todos los estilos (paleta Traxión)</span>
+│   └── js/
+│       ├── app.js          <span class="cm">← Toda la lógica y datos dummy</span>
+│       ├── embed.js        <span class="cm">← Script de integración universal</span>
+│       └── body.html.js    <span class="cm">← Fragmento HTML como JS module</span>
+├── embed_examples.html     <span class="cm">← Este archivo</span>
+└── README.md</pre>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>Opción 1 — iframe <span class="badge">Recomendado</span></h2>
+<p>El más compatible. Funciona en cualquier CMS, portal, Webflow, SharePoint, etc.</p>
+
+<h3>Básico</h3>
+<pre>&lt;iframe
+  src="<span class="hl">./traxion_lms/index.html</span>"
+  style="width:100%; height:100vh; border:none; display:block;"
+  title="Traxión Academia del Operador"
+&gt;&lt;/iframe&gt;</pre>
+
+<h3>Responsivo con altura mínima</h3>
+<pre>&lt;div style="position:relative; width:100%; min-height:700px;"&gt;
+  &lt;iframe
+    src="./traxion_lms/index.html"
+    style="position:absolute; inset:0; width:100%; height:100%; border:none;"
+    allowfullscreen
+  &gt;&lt;/iframe&gt;
+&lt;/div&gt;</pre>
+
+<h3>Abrir directamente en la app del operador</h3>
+<pre><span class="cm">&lt;!-- Agregar ?page=app-operador para iniciar en la app móvil --&gt;</span>
+&lt;iframe src="./traxion_lms/index.html<span class="hl">#app-operador</span>" ...&gt;&lt;/iframe&gt;</pre>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>Opción 2 — embed.js <span class="badge badge-blue">Avanzado</span></h2>
+<p>Inyecta el LMS dentro de un div en tu página existente.</p>
+
+<h3>HTML</h3>
+<pre><span class="cm">&lt;!-- 1. Crea el contenedor --&gt;</span>
+&lt;div id="traxion-lms" style="width:100%; height:100vh;"&gt;&lt;/div&gt;
+
+<span class="cm">&lt;!-- 2. Carga el script con el selector del contenedor --&gt;</span>
+&lt;script
+  src="./traxion_lms/assets/js/embed.js"
+  data-target="<span class="hl">#traxion-lms</span>"
+  data-mode="hr"
+&gt;&lt;/script&gt;</pre>
+
+<h3>JavaScript manual</h3>
+<pre><span class="cm">// Llamada manual con opciones</span>
+TraxionLMS.mount('#traxion-lms', { mode: 'iframe' });
+
+<span class="cm">// Navegar a una sección después de montar</span>
+TraxionLMS.navigate('app-operador');  <span class="cm">// abre la app del operador</span>
+TraxionLMS.navigate('alertas');       <span class="cm">// abre alertas</span>
+TraxionLMS.navigate('dashboard');     <span class="cm">// dashboard RRHH</span></pre>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>Opción 3 — React / Vue / Angular</h2>
+
+<h3>React</h3>
+<pre>import { useEffect, useRef } from 'react';
+
+function TraxionLMS() {
+  return (
+    &lt;iframe
+      src="<span class="hl">/static/traxion_lms/index.html</span>"
+      style={{ width: '100%', height: '100vh', border: 'none' }}
+      title="Traxión Academia del Operador"
+    /&gt;
+  );
+}</pre>
+
+<h3>Vue 3</h3>
+<pre>&lt;template&gt;
+  &lt;iframe
+    src="<span class="hl">/public/traxion_lms/index.html</span>"
+    style="width:100%;height:100vh;border:none"
+  /&gt;
+&lt;/template&gt;</pre>
+
+<h3>Angular</h3>
+<pre><span class="cm">// En tu componente:</span>
+&lt;iframe
+  [src]="lmsUrl | safeUrl"
+  style="width:100%;height:100vh;border:none"
+&gt;&lt;/iframe&gt;
+
+<span class="cm">// En tu módulo, agregar SafeUrlPipe para evitar sanitización:</span>
+import { DomSanitizer } from '@angular/platform-browser';
+lmsUrl = this.sanitizer.bypassSecurityTrustResourceUrl('/assets/traxion_lms/index.html');</pre>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>Opción 4 — Netlify / GitHub Pages (URL pública)</h2>
+<pre><span class="cm"># Netlify — arrastrar la carpeta en app.netlify.com</span>
+# O via CLI:
+npm install -g netlify-cli
+netlify deploy --dir=traxion_lms --prod
+<span class="cm"># → URL: https://traxion-lms-xxxx.netlify.app</span>
+
+<span class="cm"># GitHub Pages</span>
+git init && git add . && git commit -m "Traxión LMS"
+git branch -M main
+git remote add origin https://github.com/tu-org/traxion-lms.git
+git push -u origin main
+<span class="cm"># Ir a Settings → Pages → Branch: main → Save
+# URL: https://tu-org.github.io/traxion-lms</span></pre>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>Opciones avanzadas — data attributes</h2>
+<table>
+  <tr><th>Atributo</th><th>Valores</th><th>Descripción</th></tr>
+  <tr><td><code>data-target</code></td><td>Selector CSS</td><td>Contenedor donde montar el LMS</td></tr>
+  <tr><td><code>data-mode</code></td><td><code>hr</code> / <code>operator</code></td><td>Vista inicial al cargar</td></tr>
+  <tr><td><code>data-lang</code></td><td><code>es</code></td><td>Idioma (actualmente solo es)</td></tr>
+</table>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>Notas técnicas</h2>
+<div class="box">
+  <ul>
+    <li>El archivo <code>index.html</code> es <strong>100% standalone</strong> — CSS, JS y datos están inline. Se puede usar solo sin ningún otro archivo.</li>
+    <li>La carpeta <code>assets/</code> es para integración avanzada donde se prefiere separar capas.</li>
+    <li>La única dependencia externa es <strong>Google Fonts</strong> (Barlow) — si hay red, se carga automáticamente. Sin red, usa la fuente del sistema.</li>
+    <li>Compatible con Chrome 90+, Edge 90+, Safari 14+, Firefox 88+.</li>
+    <li>Sin cookies, sin localStorage, sin tracking. Todos los datos son en memoria (dummy).</li>
+  </ul>
+</div>
+
+</body>
+</html>

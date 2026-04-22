@@ -1,0 +1,12 @@
+export default function AirbagPage() {
+  return (
+    <div style={{ height: 'calc(100vh - 56px)' }}>
+      <iframe
+        src="/airbag-app/index.html"
+        className="w-full h-full border-0"
+        title="Airbag Sistema Integral"
+        sandbox="allow-scripts allow-same-origin"
+      />
+    </div>
+  )
+}
