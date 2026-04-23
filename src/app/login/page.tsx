@@ -4,15 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Shield, BarChart3, Users, ClipboardCheck, UserPlus, UserMinus, RotateCcw, ArrowRight, Lock } from 'lucide-react'
 import Image from 'next/image'
-import { LIVDM_USUARIOS } from '@/lib/livdm-usuarios'
-
-const USUARIOS_ADMIN = [
-  { email: 'j.ramirez@traxion.com.mx',   password: 'Nexo2026',   nombre: 'Javier Ramírez',       rol: 'Administrador',              rolCode: 'ADMIN', nomina: '' },
-  { email: 'adp.garcia@traxion.com.mx',  password: 'Adp2026!',   nombre: 'ADP García',            rol: 'Admon. de Personal',         rolCode: 'ADP',   nomina: '' },
-  { email: 'rl.torres@traxion.com.mx',   password: 'RelLab26',   nombre: 'RL Torres',             rol: 'Relaciones Laborales',       rolCode: 'RL',    nomina: '' },
-]
-
-const USUARIOS = [...USUARIOS_ADMIN, ...LIVDM_USUARIOS]
 
 const MODULES = [
   { icon: BarChart3,    label: 'Dashboard',    desc: 'KPIs y métricas en tiempo real' },
@@ -48,16 +39,31 @@ export default function LoginPage() {
       return
     }
     setLoading(true)
-    await new Promise(r => setTimeout(r, 900))
-    setLoading(false)
-    const usuario = USUARIOS.find(u => u.email === email && u.password === password)
-    if (!usuario) {
-      setError('Correo o contraseña incorrectos.')
-      return
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario: email, contrasena: password }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Correo o contraseña incorrectos.')
+        return
+      }
+      localStorage.setItem('nexo_auth', JSON.stringify({ ts: Date.now() }))
+      localStorage.setItem('nexo_user', JSON.stringify({
+        nombre:   data.nombre,
+        email:    data.email,
+        rol:      data.rol,
+        rolCode:  data.rolCode,
+        nomina:   data.nomina ?? '',
+      }))
+      router.push('/dashboard')
+    } catch {
+      setError('Error de conexión. Intenta de nuevo.')
+    } finally {
+      setLoading(false)
     }
-    localStorage.setItem('nexo_auth', JSON.stringify({ ts: Date.now() }))
-    localStorage.setItem('nexo_user', JSON.stringify({ nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, rolCode: usuario.rolCode, nomina: usuario.nomina || '' }))
-    router.push('/dashboard')
   }
 
   return (
