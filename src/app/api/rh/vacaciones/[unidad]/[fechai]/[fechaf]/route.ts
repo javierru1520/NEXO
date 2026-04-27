@@ -8,19 +8,18 @@ export async function GET(
   try {
     const { unidad, fechai, fechaf } = await params
 
-    // Buscar id_unidad_negocio por clave o por id
     const unidades = await sql`
       SELECT id_unidad_negocio FROM unidades_negocios
       WHERE clave = ${unidad} OR id_unidad_negocio::text = ${unidad} OR LOWER(descripcion) LIKE ${'%' + unidad.toLowerCase() + '%'}
       LIMIT 1
     `
 
-    // Si no encuentra la unidad, devuelve todo (sin filtro de unidad)
     const rows = unidades.length > 0
       ? await sql`
           SELECT
             sv.id_solicitud_vacacion,
             sv.id_empleado,
+            COALESCE(e.nomina, u.nomina)  AS nomina,
             e.rfc,
             e.nombres,
             e.apellido_paterno,
@@ -34,7 +33,7 @@ export async function GET(
             sv.observaciones
           FROM solicitudes_vacaciones sv
           JOIN empleados e ON e.id_empleado = sv.id_empleado
-          JOIN usuarios u ON u.id_empleado = e.id_empleado AND u.activo = 1
+          LEFT JOIN usuarios u ON u.id_empleado = e.id_empleado AND u.activo = 1
           JOIN usuarios_unidades_negocio uun ON uun.id_usuario = u.id_usuario AND uun.activo = 1
           WHERE sv.activo = 1
             AND sv.estatus = 'autorizado_jt'
@@ -46,6 +45,7 @@ export async function GET(
           SELECT
             sv.id_solicitud_vacacion,
             sv.id_empleado,
+            COALESCE(e.nomina, u.nomina) AS nomina,
             e.rfc,
             e.nombres,
             e.apellido_paterno,
@@ -59,6 +59,7 @@ export async function GET(
             sv.observaciones
           FROM solicitudes_vacaciones sv
           JOIN empleados e ON e.id_empleado = sv.id_empleado
+          LEFT JOIN usuarios u ON u.id_empleado = e.id_empleado AND u.activo = 1
           WHERE sv.activo = 1
             AND sv.estatus = 'autorizado_jt'
             AND sv.fecha_inicio <= ${fechaf}::date

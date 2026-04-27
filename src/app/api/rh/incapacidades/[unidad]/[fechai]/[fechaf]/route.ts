@@ -19,6 +19,7 @@ export async function GET(
           SELECT
             ei.id_empleado_incapacidad,
             ei.id_empleado,
+            COALESCE(e.nomina, u.nomina) AS nomina,
             e.rfc,
             e.nombres,
             e.apellido_paterno,
@@ -37,7 +38,7 @@ export async function GET(
           FROM empleados_incapacidades ei
           JOIN empleados e ON e.id_empleado = ei.id_empleado
           JOIN cat_tipos_incapacidad ti ON ti.id_tipo_incapacidad = ei.id_tipo_incapacidad
-          JOIN usuarios u ON u.id_empleado = e.id_empleado AND u.activo = 1
+          LEFT JOIN usuarios u ON u.id_empleado = e.id_empleado AND u.activo = 1
           JOIN usuarios_unidades_negocio uun ON uun.id_usuario = u.id_usuario AND uun.activo = 1
           WHERE ei.activo = 1
             AND ei.estatus = 'autorizado_jt'
@@ -49,6 +50,7 @@ export async function GET(
           SELECT
             ei.id_empleado_incapacidad,
             ei.id_empleado,
+            COALESCE(e.nomina, u.nomina) AS nomina,
             e.rfc,
             e.nombres,
             e.apellido_paterno,
@@ -67,6 +69,7 @@ export async function GET(
           FROM empleados_incapacidades ei
           JOIN empleados e ON e.id_empleado = ei.id_empleado
           JOIN cat_tipos_incapacidad ti ON ti.id_tipo_incapacidad = ei.id_tipo_incapacidad
+          LEFT JOIN usuarios u ON u.id_empleado = e.id_empleado AND u.activo = 1
           WHERE ei.activo = 1
             AND ei.estatus = 'autorizado_jt'
             AND ei.fecha_inicio <= ${fechaf}::date
