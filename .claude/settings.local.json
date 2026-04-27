@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm list *)",
+      "Bash(npm uninstall *)",
+      "Bash(powershell -Command \"Remove-Item -Recurse -Force 'C:\\\\xampp\\\\htdocs\\\\nexo\\\\.next' -ErrorAction SilentlyContinue; Write-Host done\")"
+    ],
+    "additionalDirectories": [
+      "c:\\xampp\\htdocs\\nexo\\src\\app\\api\\auth"
+    ]
+  }
+}

@@ -1,12 +1,11 @@
-import { Pool } from 'pg'
+import postgres from 'postgres'
 
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT ?? 5432),
-  ssl: { rejectUnauthorized: false },
+const sql = postgres(process.env.DATABASE_URL!, {
+  max: 10,
+  idle_timeout: 30,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 })
 
-export default pool
+export default sql

@@ -1,61 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import pool from '@/lib/db'
+import sql from '@/lib/db'
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const { usuario, contrasena } = await req.json()
+    const body = await request.json()
+    const { usuario, contrasena } = body as { usuario: string; contrasena: string }
 
     if (!usuario || !contrasena) {
-      return NextResponse.json({ error: 'Usuario y contraseña requeridos' }, { status: 400 })
+      return NextResponse.json({ error: 'Credenciales requeridas.' }, { status: 400 })
     }
 
-    // Busca por usuario o correo
-    const result = await pool.query(
-      `SELECT u.id_usuario, u.usuario, u.correo, u.contrasena, u.id_rol,
-              u.id_empleado, u.nomina, r.nombre AS rol_nombre
-       FROM usuarios u
-       JOIN cat_roles r ON r.id_rol = u.id_rol
-       WHERE (u.usuario = $1 OR u.correo = $1) AND u.activo = 1
-       LIMIT 1`,
-      [usuario]
-    )
+    const rows = await sql`
+      SELECT * FROM usuarios WHERE correo = ${usuario.trim().toLowerCase()} LIMIT 1
+    `
 
-    if (result.rowCount === 0) {
-      return NextResponse.json({ error: 'Credenciales incorrectas' }, { status: 401 })
+    // Mismo mensaje para usuario no encontrado o contraseña incorrecta (evita enumeración)
+    const INVALID = 'Correo o contraseña incorrectos.'
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: INVALID }, { status: 401 })
     }
 
-    const user = result.rows[0]
-    const valid = await bcrypt.compare(contrasena, user.contrasena)
+    const user = rows[0]
+    const valid = await bcrypt.compare(contrasena, user.contrasena as string)
 
     if (!valid) {
-      return NextResponse.json({ error: 'Credenciales incorrectas' }, { status: 401 })
-    }
-
-    // Mapeo de rol a rolCode que usan las páginas
-    const rolCodeMap: Record<string, string> = {
-      admin:        'ADMIN',
-      rrhh:         'ADP',
-      jt:           'JT',
-      coordinador:  'C',
-      empleado:     'EMP',
+      return NextResponse.json({ error: INVALID }, { status: 401 })
     }
 
     return NextResponse.json({
-      ok: true,
-      user: {
-        id_usuario:  user.id_usuario,
-        usuario:     user.usuario,
-        correo:      user.correo,
-        id_rol:      user.id_rol,
-        rol:         user.rol_nombre,
-        rolCode:     rolCodeMap[user.rol_nombre] ?? user.rol_nombre.toUpperCase(),
-        nomina:      user.nomina ?? '',
-        id_empleado: user.id_empleado,
-      },
+      nombre:  user.nombre,
+      email:   user.correo,
+      rol:     user.rol,
+      rolCode: user.rol_code ?? user.rolcode ?? '',
+      nomina:  user.nomina ?? '',
     })
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Error interno'
-    return NextResponse.json({ error: msg }, { status: 500 })
+  } catch (err) {
+    console.error('[auth/login]', err)
+    const detail = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: 'Error interno del servidor.', detail }, { status: 500 })
   }
 }

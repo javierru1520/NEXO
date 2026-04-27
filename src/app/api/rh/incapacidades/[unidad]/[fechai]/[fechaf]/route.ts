@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import pool from '@/lib/db'
+import sql from '@/lib/db'
 
-// GET /api/rh/incapacidades/{unidad}/{fechai}/{fechaf}
-// Odoo/prenomina consume este endpoint para extraer incapacidades por unidad y rango de fechas
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ unidad: string; fechai: string; fechaf: string }> }
@@ -10,8 +8,8 @@ export async function GET(
   try {
     const { unidad, fechai, fechaf } = await params
 
-    const result = await pool.query(
-      `SELECT
+    const rows = await sql`
+      SELECT
         ei.id_empleado_incapacidad,
         ei.id_empleado,
         e.rfc,
@@ -31,27 +29,20 @@ export async function GET(
         ei.fecha_actualizacion,
         un.clave              AS unidad_clave,
         un.descripcion        AS unidad_descripcion
-       FROM empleados_incapacidades ei
-       JOIN empleados e ON e.id_empleado = ei.id_empleado
-       JOIN cat_tipos_incapacidad ti ON ti.id_tipo_incapacidad = ei.id_tipo_incapacidad
-       JOIN usuarios_unidades_negocio uun ON uun.id_empleado = e.id_empleado AND uun.activo = 1
-       JOIN unidades_negocios un ON un.id_unidad_negocio = uun.id_unidad_negocio
-       WHERE ei.activo = 1
-         AND ei.estatus = 'autorizado_jt'
-         AND (un.clave = $1 OR un.id_unidad_negocio::text = $1)
-         AND ei.fecha_inicio <= $3::date
-         AND ei.fecha_fin    >= $2::date
-       ORDER BY ei.fecha_inicio`,
-      [unidad, fechai, fechaf]
-    )
+      FROM empleados_incapacidades ei
+      JOIN empleados e ON e.id_empleado = ei.id_empleado
+      JOIN cat_tipos_incapacidad ti ON ti.id_tipo_incapacidad = ei.id_tipo_incapacidad
+      JOIN usuarios_unidades_negocio uun ON uun.id_empleado = e.id_empleado AND uun.activo = 1
+      JOIN unidades_negocios un ON un.id_unidad_negocio = uun.id_unidad_negocio
+      WHERE ei.activo = 1
+        AND ei.estatus = 'autorizado_jt'
+        AND (un.clave = ${unidad} OR un.id_unidad_negocio::text = ${unidad})
+        AND ei.fecha_inicio <= ${fechaf}::date
+        AND ei.fecha_fin    >= ${fechai}::date
+      ORDER BY ei.fecha_inicio
+    `
 
-    return NextResponse.json({
-      unidad,
-      fechai,
-      fechaf,
-      total: result.rowCount,
-      incapacidades: result.rows,
-    })
+    return NextResponse.json({ unidad, fechai, fechaf, total: rows.length, incapacidades: rows })
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Error interno'
     return NextResponse.json({ error: msg }, { status: 500 })
