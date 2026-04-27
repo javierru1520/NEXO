@@ -48,16 +48,33 @@ export default function LoginPage() {
       return
     }
     setLoading(true)
-    await new Promise(r => setTimeout(r, 900))
-    setLoading(false)
-    const usuario = USUARIOS.find(u => u.email === email && u.password === password)
-    if (!usuario) {
-      setError('Correo o contraseña incorrectos.')
-      return
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario: email, contrasena: password }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Correo o contraseña incorrectos.')
+        return
+      }
+      localStorage.setItem('nexo_auth', JSON.stringify({ ts: Date.now() }))
+      localStorage.setItem('nexo_user', JSON.stringify({
+        id_usuario:  data.user.id_usuario,
+        nombre:      data.user.usuario,
+        email:       data.user.correo,
+        rol:         data.user.rol,
+        rolCode:     data.user.rolCode,
+        nomina:      data.user.nomina,
+        id_empleado: data.user.id_empleado,
+      }))
+      router.push('/dashboard')
+    } catch {
+      setError('Error de conexión. Intenta de nuevo.')
+    } finally {
+      setLoading(false)
     }
-    localStorage.setItem('nexo_auth', JSON.stringify({ ts: Date.now() }))
-    localStorage.setItem('nexo_user', JSON.stringify({ nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, rolCode: usuario.rolCode, nomina: usuario.nomina || '' }))
-    router.push('/dashboard')
   }
 
   return (
