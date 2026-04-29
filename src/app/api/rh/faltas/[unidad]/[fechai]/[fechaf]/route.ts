@@ -8,6 +8,56 @@ interface BustraxFalta {
   totalFaltas: string
 }
 
+// Cache in-memory con TTL de 5 minutos. Llave: `${fechai}_${fechaf}`
+const cache = new Map<string, { data: BustraxFalta[]; ts: number }>()
+const CACHE_TTL_MS = 5 * 60 * 1000
+const BUSTRAX_IDS = Array.from({ length: 50 }, (_, i) => i + 1)
+const BUSTRAX_TIMEOUT_MS = 3000
+const BUSTRAX_BASE = 'https://recibosrh.lidcorp.mx/bustrax-0.0.1/api/bustrax/faltas/empleados'
+
+async function fetchAllBustraxFaltas(fechai: string, fechaf: string): Promise<BustraxFalta[]> {
+  const key = `${fechai}_${fechaf}`
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.data
+
+  const results = await Promise.allSettled(
+    BUSTRAX_IDS.map(async (id) => {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), BUSTRAX_TIMEOUT_MS)
+      try {
+        const res = await fetch(`${BUSTRAX_BASE}/${id}/${fechai}/${fechaf}`, {
+          cache: 'no-store',
+          signal: controller.signal,
+        })
+        if (!res.ok) return []
+        const data = await res.json()
+        return Array.isArray(data) ? (data as BustraxFalta[]) : []
+      } catch {
+        return []
+      } finally {
+        clearTimeout(timer)
+      }
+    })
+  )
+
+  // Consolidar y deduplicar por noEmpleado (máximo totalFaltas)
+  const map = new Map<string, BustraxFalta>()
+  for (const result of results) {
+    if (result.status === 'rejected') continue
+    for (const falta of result.value) {
+      if (!falta.noEmpleado) continue
+      const existing = map.get(falta.noEmpleado)
+      if (!existing || parseInt(falta.totalFaltas) > parseInt(existing.totalFaltas)) {
+        map.set(falta.noEmpleado, falta)
+      }
+    }
+  }
+
+  const data = Array.from(map.values())
+  cache.set(key, { data, ts: Date.now() })
+  return data
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ unidad: string; fechai: string; fechaf: string }> }
@@ -32,24 +82,17 @@ export async function GET(
 
     const { id_unidad_negocio, descripcion: unidad_negocio_nombre } = unidades[0]
 
-    // 2. Traer faltas del periodo desde Bustrax
-    const bustraxUrl = `https://recibosrh.lidcorp.mx/bustrax-0.0.1/api/bustrax/faltas/empleados/${unidad}/${fechai}/${fechaf}`
-    const bustraxRes = await fetch(bustraxUrl, { cache: 'no-store' })
+    // 2. Obtener TODAS las faltas de Bustrax (todos los IDs, con cache)
+    const faltasBustrax = await fetchAllBustraxFaltas(fechai, fechaf)
 
-    if (!bustraxRes.ok) {
-      return NextResponse.json({ error: 'Error al consultar faltas en Bustrax' }, { status: 502 })
-    }
-
-    const faltasBustrax: BustraxFalta[] = await bustraxRes.json()
-
-    if (!Array.isArray(faltasBustrax) || faltasBustrax.length === 0) {
+    if (faltasBustrax.length === 0) {
       return NextResponse.json({
         unidad, unidad_negocio: unidad_negocio_nombre, fechai, fechaf,
         total: 0, excluidos: { vacaciones: 0, incapacidades: 0 }, faltas: [],
       })
     }
 
-    const nominas = faltasBustrax.map(f => f.noEmpleado).filter(Boolean)
+    const nominas = faltasBustrax.map(f => f.noEmpleado)
     const faltasMap = new Map(faltasBustrax.map(f => [f.noEmpleado, f]))
 
     // 3. Empleados de NEXO: intersección entre nóminas de Bustrax y la unidad solicitada
