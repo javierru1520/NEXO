@@ -28,22 +28,46 @@ export async function GET(
       return NextResponse.json({ unidad, fechai, fechaf, total: 0, faltas: [] })
     }
 
+    const unidades = await sql`
+      SELECT id_unidad_negocio FROM unidades_negocios
+      WHERE clave = ${unidad}
+         OR id_unidad_negocio::text = ${unidad}
+         OR LOWER(descripcion) LIKE ${'%' + unidad.toLowerCase() + '%'}
+      LIMIT 1
+    `
+
     const nominas = faltasBustrax.map(f => f.noEmpleado).filter(Boolean)
 
-    const empleados = await sql`
-      SELECT
-        e.nomina,
-        e.rfc,
-        e.nombres,
-        e.apellido_paterno,
-        e.apellido_materno,
-        un.descripcion AS unidad_negocio
-      FROM empleados e
-      LEFT JOIN usuarios u      ON u.id_empleado = e.id_empleado AND u.activo = 1
-      LEFT JOIN usuarios_unidades_negocio uun ON uun.id_usuario = u.id_usuario AND uun.activo = 1
-      LEFT JOIN unidades_negocios un ON un.id_unidad_negocio = uun.id_unidad_negocio
-      WHERE e.nomina = ANY(${nominas})
-    `
+    const empleados = unidades.length > 0
+      ? await sql`
+          SELECT
+            e.nomina,
+            e.rfc,
+            e.nombres,
+            e.apellido_paterno,
+            e.apellido_materno,
+            un.descripcion AS unidad_negocio
+          FROM empleados e
+          LEFT JOIN usuarios u      ON u.id_empleado = e.id_empleado AND u.activo = 1
+          LEFT JOIN usuarios_unidades_negocio uun ON uun.id_usuario = u.id_usuario AND uun.activo = 1
+          LEFT JOIN unidades_negocios un ON un.id_unidad_negocio = uun.id_unidad_negocio
+          WHERE e.nomina = ANY(${nominas})
+            AND uun.id_unidad_negocio = ${unidades[0].id_unidad_negocio}
+        `
+      : await sql`
+          SELECT
+            e.nomina,
+            e.rfc,
+            e.nombres,
+            e.apellido_paterno,
+            e.apellido_materno,
+            un.descripcion AS unidad_negocio
+          FROM empleados e
+          LEFT JOIN usuarios u      ON u.id_empleado = e.id_empleado AND u.activo = 1
+          LEFT JOIN usuarios_unidades_negocio uun ON uun.id_usuario = u.id_usuario AND uun.activo = 1
+          LEFT JOIN unidades_negocios un ON un.id_unidad_negocio = uun.id_unidad_negocio
+          WHERE e.nomina = ANY(${nominas})
+        `
 
     const empMap = new Map(empleados.map(e => [e.nomina, e]))
 
