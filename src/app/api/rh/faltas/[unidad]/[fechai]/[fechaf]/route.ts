@@ -28,12 +28,11 @@ export async function GET(
       return NextResponse.json({ unidad, fechai, fechaf, total: 0, faltas: [] })
     }
 
-    const claves = faltasBustrax.map(f => f.noEmpleado).filter(Boolean)
+    const nominas = faltasBustrax.map(f => f.noEmpleado).filter(Boolean)
 
     const empleados = await sql`
       SELECT
-        e.clave,
-        COALESCE(e.nomina, u.nomina) AS nomina,
+        e.nomina,
         e.rfc,
         e.nombres,
         e.apellido_paterno,
@@ -43,16 +42,16 @@ export async function GET(
       LEFT JOIN usuarios u      ON u.id_empleado = e.id_empleado AND u.activo = 1
       LEFT JOIN usuarios_unidades_negocio uun ON uun.id_usuario = u.id_usuario AND uun.activo = 1
       LEFT JOIN unidades_negocios un ON un.id_unidad_negocio = uun.id_unidad_negocio
-      WHERE e.clave = ANY(${claves})
+      WHERE e.nomina = ANY(${nominas})
     `
 
-    const empMap = new Map(empleados.map(e => [e.clave, e]))
+    const empMap = new Map(empleados.map(e => [e.nomina, e]))
 
     const faltas = faltasBustrax.map(f => {
       const emp = empMap.get(f.noEmpleado)
       return {
         no_empleado: f.noEmpleado,
-        nomina: emp?.nomina ?? null,
+        nomina: emp?.nomina ?? f.noEmpleado,
         rfc: emp?.rfc ?? null,
         nombres: emp?.nombres ?? null,
         apellido_paterno: emp?.apellido_paterno ?? null,
