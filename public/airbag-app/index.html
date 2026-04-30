@@ -364,8 +364,8 @@ tr.me-row{background:#feffd6 !important}
 <!-- ===== APP ===== -->
 <div id="screen-app">
   <div class="app-body" style="min-height:100vh">
-    <div class="sidebar" id="sidebar" style="overflow-y:auto">
-      <div style="padding:0.6rem 0.75rem 0.4rem;border-bottom:1px solid rgba(208,223,0,0.10);position:sticky;top:0;background:#0d0d0d;z-index:10">
+    <div class="sidebar" id="sidebar">
+      <div style="padding:0.6rem 0.75rem 0.4rem;border-bottom:1px solid rgba(208,223,0,0.10)">
         <div style="font-size:0.52rem;color:rgba(208,223,0,0.45);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px;font-family:'Syne',sans-serif;font-weight:700">Vista</div>
         <select id="role-switcher" onchange="ql(this.value)" style="width:100%;font-size:0.72rem;border:1px solid rgba(208,223,0,0.25);border-radius:5px;padding:5px 8px;color:#fff;background:#1a1d26;cursor:pointer;outline:none">
           <option value="op-good">👷 Operador — score alto</option>
@@ -376,7 +376,7 @@ tr.me-row{background:#feffd6 !important}
           <option value="dir">🏢 Dirección general</option>
         </select>
       </div>
-      <div id="sidebar-nav"></div>
+      <div id="sidebar-nav" style="flex:1;overflow-y:auto"></div>
       <div class="s-foot" style="flex-direction:column;gap:6px;align-items:stretch">
         <div style="display:flex;align-items:center;gap:8px">
           <div class="s-av" id="s-av"></div>
@@ -579,8 +579,7 @@ var ALL_OPS=[];
 })();
 function myOps(){
   var u=CUR?USERS[CUR]:null;if(!u||!u.coordId)return ALL_OPS.slice(0,15);
-  var filtered=ALL_OPS.filter(function(o){return o.coord===u.coordId;});
-  return filtered.length>0?filtered:ALL_OPS.slice(0,15);
+  return ALL_OPS.filter(function(o){return o.coord===u.coordId;});
 }
 function filterOps(){
   var q=(document.getElementById('ops-search')?document.getElementById('ops-search').value:'').toLowerCase();
@@ -1191,7 +1190,7 @@ function pageDashCond(u){
     +'<div class="hero-dark" style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap">'
     +'<div style="flex:1;min-width:200px">'
     +'<div class="hero-label">PORTAL DEL CONDUCTOR · LIPU MOVILIDAD</div>'
-    +'<div class="hero-title">Hola, '+((u.name||'Conductor').split(' ')[0])+'</div>'
+    +'<div class="hero-title">Hola, '+u.name.split(' ')[0]+'</div>'
     +'<div class="hero-sub">'+u.role+'</div>'
     +'<div class="lvl-chip"><div class="lvl-star"></div><span style="font-family:Syne,sans-serif;font-weight:800;font-size:0.71rem;color:var(--lime)">Nivel '+u.level+' — '+(g?'Top 3% de la flota':'Zona de mejora')+'</span></div>'
     +'<div class="pts-row">'
@@ -1242,7 +1241,7 @@ function pageComoGanar(){
     +'<div style="margin-top:0.875rem;background:var(--surface);border-radius:4px;padding:0.75rem;font-size:0.71rem;color:var(--muted);line-height:1.6"><strong style="font-family:Syne,sans-serif;color:var(--text)">Beneficios ÉLITE:</strong><br>✓ Catálogo premium · ✓ 1.5x multiplicador · ✓ Bono mensual +200 pts</div></div>'
     +'<div class="card" style="margin-bottom:0"><div class="ct" style="margin-bottom:0.625rem">Puntos por capacitación</div>'
     +capPts.map(function(c){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--surface);border-radius:4px;margin-bottom:4px"><span style="font-size:0.77rem">'+c[0]+'</span><span style="font-family:Syne,sans-serif;font-weight:700;font-size:0.79rem;color:var(--blue)">+'+c[1]+' pts</span></div>';}).join('')
-    +'</div></div></div></div>';
+    +'</div></div></div></div></div></div>';
 }
 
 function pagePremios(u){
@@ -1365,7 +1364,7 @@ async function nexoInit(){
     else if(u.rolCode==='JT') role='gerente';
     else if(u.rolCode==='ADMIN') role='dir';
     var ini=(u.nombre||'').split(' ').filter(Boolean).slice(0,2).map(function(w){return w[0];}).join('').toUpperCase()||'?';
-    USERS[role]=Object.assign({},USERS[role],{name:u.nombre||USERS[role].name,role:u.rol||USERS[role].role,ini:ini,bg:'#0f1117',clr:'#c8e000',coordId:'__NEXO__'});
+    USERS[role]=Object.assign({},USERS[role],{name:u.nombre,role:u.rol||USERS[role].role,ini:ini,bg:'#0f1117',clr:'#c8e000',coordId:'__NEXO__'});
     if(u.nomina&&(role==='coord'||role==='gerente')){
       try{
         var res=await fetch('/api/lms/operadores?nomina='+encodeURIComponent(u.nomina));
