@@ -8,11 +8,11 @@ interface BustraxFalta {
   totalFaltas: string
 }
 
-// Cache in-memory con TTL de 5 minutos. Llave: `${fechai}_${fechaf}`
 const cache = new Map<string, { data: BustraxFalta[]; ts: number }>()
 const CACHE_TTL_MS = 5 * 60 * 1000
-const BUSTRAX_IDS = Array.from({ length: 50 }, (_, i) => i + 1)
-const BUSTRAX_TIMEOUT_MS = 3000
+const BUSTRAX_IDS = Array.from({ length: 30 }, (_, i) => i + 1)
+const BUSTRAX_TIMEOUT_MS = 20000
+const BATCH_SIZE = 10
 const BUSTRAX_BASE = 'https://recibosrh.lidcorp.mx/bustrax-0.0.1/api/bustrax/faltas/empleados'
 
 async function fetchAllBustraxFaltas(fechai: string, fechaf: string): Promise<BustraxFalta[]> {
@@ -20,36 +20,40 @@ async function fetchAllBustraxFaltas(fechai: string, fechaf: string): Promise<Bu
   const cached = cache.get(key)
   if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.data
 
-  const results = await Promise.allSettled(
-    BUSTRAX_IDS.map(async (id) => {
-      const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), BUSTRAX_TIMEOUT_MS)
-      try {
-        const res = await fetch(`${BUSTRAX_BASE}/${id}/${fechai}/${fechaf}`, {
-          cache: 'no-store',
-          signal: controller.signal,
-        })
-        if (!res.ok) return []
-        const data = await res.json()
-        return Array.isArray(data) ? (data as BustraxFalta[]) : []
-      } catch {
-        return []
-      } finally {
-        clearTimeout(timer)
-      }
-    })
-  )
+  const allResults: BustraxFalta[] = []
 
-  // Consolidar y deduplicar por noEmpleado (máximo totalFaltas)
+  for (let i = 0; i < BUSTRAX_IDS.length; i += BATCH_SIZE) {
+    const batch = BUSTRAX_IDS.slice(i, i + BATCH_SIZE)
+    const results = await Promise.allSettled(
+      batch.map(async (id) => {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), BUSTRAX_TIMEOUT_MS)
+        try {
+          const res = await fetch(`${BUSTRAX_BASE}/${id}/${fechai}/${fechaf}`, {
+            cache: 'no-store',
+            signal: controller.signal,
+          })
+          if (!res.ok) return []
+          const data = await res.json()
+          return Array.isArray(data) ? (data as BustraxFalta[]) : []
+        } catch {
+          return []
+        } finally {
+          clearTimeout(timer)
+        }
+      })
+    )
+    for (const result of results) {
+      if (result.status === 'fulfilled') allResults.push(...result.value)
+    }
+  }
+
   const map = new Map<string, BustraxFalta>()
-  for (const result of results) {
-    if (result.status === 'rejected') continue
-    for (const falta of result.value) {
-      if (!falta.noEmpleado) continue
-      const existing = map.get(falta.noEmpleado)
-      if (!existing || parseInt(falta.totalFaltas) > parseInt(existing.totalFaltas)) {
-        map.set(falta.noEmpleado, falta)
-      }
+  for (const falta of allResults) {
+    if (!falta.noEmpleado) continue
+    const existing = map.get(falta.noEmpleado)
+    if (!existing || parseInt(falta.totalFaltas) > parseInt(existing.totalFaltas)) {
+      map.set(falta.noEmpleado, falta)
     }
   }
 
@@ -65,7 +69,6 @@ export async function GET(
   try {
     const { unidad, fechai, fechaf } = await params
 
-    // 1. Resolver unidad en NEXO — error explícito si no existe
     const unidades = await sql`
       SELECT id_unidad_negocio, descripcion FROM unidades_negocios
       WHERE clave = ${unidad}
@@ -82,7 +85,6 @@ export async function GET(
 
     const { id_unidad_negocio, descripcion: unidad_negocio_nombre } = unidades[0]
 
-    // 2. Obtener TODAS las faltas de Bustrax (todos los IDs, con cache)
     const faltasBustrax = await fetchAllBustraxFaltas(fechai, fechaf)
 
     if (faltasBustrax.length === 0) {
@@ -95,7 +97,6 @@ export async function GET(
     const nominas = faltasBustrax.map(f => f.noEmpleado)
     const faltasMap = new Map(faltasBustrax.map(f => [f.noEmpleado, f]))
 
-    // 3. Empleados de NEXO: intersección entre nóminas de Bustrax y la unidad solicitada
     const empleados = await sql`
       SELECT
         e.id_empleado,
@@ -122,7 +123,6 @@ export async function GET(
 
     const idEmpleados = empleados.map(e => e.id_empleado)
 
-    // 4a. Vacaciones autorizadas que se solapan con el periodo
     const vacExcluir = await sql`
       SELECT DISTINCT id_empleado FROM solicitudes_vacaciones
       WHERE id_empleado = ANY(${idEmpleados})
@@ -132,7 +132,6 @@ export async function GET(
         AND fecha_fin    >= ${fechai}::date
     `
 
-    // 4b. Incapacidades pendientes o autorizadas que se solapan con el periodo
     const incExcluir = await sql`
       SELECT DISTINCT id_empleado FROM empleados_incapacidades
       WHERE id_empleado = ANY(${idEmpleados})
@@ -146,7 +145,6 @@ export async function GET(
     const excluirInc = new Set(incExcluir.map(i => i.id_empleado))
     const excluirTodos = new Set([...excluirVac, ...excluirInc])
 
-    // 5. Faltas injustificadas: empleados de la unidad sin ausencia autorizada en el periodo
     const faltas = empleados
       .filter(emp => !excluirTodos.has(emp.id_empleado))
       .map(emp => ({
