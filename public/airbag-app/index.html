@@ -374,6 +374,17 @@ tr.me-row{background:#feffd6 !important}
             <div style="font-size:0.61rem;color:rgba(255,255,255,0.28)" id="s-role"></div>
           </div>
         </div>
+        <div>
+          <div style="font-size:0.55rem;color:rgba(15,17,23,0.38);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;font-family:'Syne',sans-serif;font-weight:700">Vista</div>
+          <select id="role-switcher" onchange="ql(this.value)" style="width:100%;font-size:0.71rem;border:1px solid rgba(15,17,23,0.14);border-radius:6px;padding:5px 8px;color:#0f1117;background:#fff;cursor:pointer;outline:none">
+            <option value="dir">Dirección general</option>
+            <option value="gerente">Gerente de zona</option>
+            <option value="coord">Coordinador A</option>
+            <option value="coord2">Coordinador B</option>
+            <option value="op-good">Operador — score alto</option>
+            <option value="op-bad">Operador — score bajo</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="content" id="content"></div>
@@ -428,6 +439,7 @@ function ql(role){
   buildContent(u.rt,u);
   var first={dir:'p-dir',gerente:'p-gerente',coord:'p-coord-home',op:'p-dash-cond'}[u.rt]||'p-dash-cond';
   navTo(first);
+  var rs=_el('role-switcher');if(rs)rs.value=role;
 }
 function logout(){CUR=null;if(_el('screen-app'))_el('screen-app').classList.add('hidden');if(_el('screen-login'))_el('screen-login').classList.remove('hidden');if(_el('content'))_el('content').innerHTML='';if(_el('sidebar-nav'))_el('sidebar-nav').innerHTML='';charts={};}
 function goHome(){if(!CUR)return;var u=USERS[CUR];navTo({dir:'p-dir',gerente:'p-gerente',coord:'p-coord-home',op:'p-dash-cond'}[u.rt]||'p-dash-cond');}
@@ -1249,13 +1261,30 @@ function pagePremios(u){
 }
 
 function pageBeneficios(u){
-  var bens=[['❤️','var(--rbg)','Seguro de vida','p-ok','Activo','Cobertura $500,000 MXN para ti y familia, sin costo adicional.'],['🏥','var(--bbg)','Médico a domicilio 24/7','p-ok','Activo','250 ciudades, 100+ especialidades. Expediente clínico digital.'],['🦷','var(--gbg)','Asistencia odontológica','p-ok','Activo','Red de dentistas con hasta 40% de descuento.'],['🚗','var(--abg)','Asistencia vial 24/7','p-ok','Activo','Grúa, cambio de llanta y paso de corriente en cualquier punto.'],['⚱️','#EEEDFE','Asistencia funeraria','p-ok','Activo','Cobertura completa para ti y cónyuge con coordinación inmediata.'],['🏷️',u.level==='ÉLITE'?'var(--lime-bg)':'var(--surface)','Descuentos exclusivos',u.level==='ÉLITE'?'p-yl':'p-gr',u.level==='ÉLITE'?'Solo ÉLITE':'Requiere ÉLITE','3,000+ marcas con descuentos exclusivos para nivel ÉLITE.']];
+  var eliteOk=u.level==='ÉLITE';
+  var bens=[
+    ['❤️','var(--rbg)','Seguro de vida','p-ok','Activo','Cobertura $500,000 MXN para ti y familia, sin costo adicional.','Contacta a RRHH para designar beneficiarios',true],
+    ['🏥','var(--bbg)','Médico a domicilio 24/7','p-ok','Activo','250 ciudades, 100+ especialidades. Expediente clínico digital.','Llama al 800 000 0000 para agendar consulta',true],
+    ['🦷','var(--gbg)','Asistencia odontológica','p-ok','Activo','Red de dentistas con hasta 40% de descuento.','Ver directorio de dentistas en red',true],
+    ['🚗','var(--abg)','Asistencia vial 24/7','p-ok','Activo','Grúa, cambio de llanta y paso de corriente en cualquier punto.','Llama al 800 000 0000 en emergencias',true],
+    ['⚱️','#EEEDFE','Asistencia funeraria','p-ok','Activo','Cobertura completa para ti y cónyuge con coordinación inmediata.','Contacta a RRHH para más información',true],
+    ['🏷️',eliteOk?'var(--lime-bg)':'var(--surface)','Descuentos exclusivos',eliteOk?'p-yl':'p-gr',eliteOk?'Solo ÉLITE':'Requiere ÉLITE','3,000+ marcas con descuentos exclusivos para nivel ÉLITE.',eliteOk?'Acceder a mis descuentos':'Alcanza nivel ÉLITE para desbloquear',eliteOk]
+  ];
   return '<div class="page" id="p-beneficios"><div class="pi">'
     +'<div style="display:grid;grid-template-columns:190px 1fr;gap:1.5rem;align-items:start;margin-bottom:1rem">'
     +'<div class="illus-box">'+svgShield()+'<div style="text-align:center"><div style="font-family:Syne,sans-serif;font-weight:800;font-size:0.88rem">Protegido 24/7</div><div style="font-size:0.71rem;color:var(--muted);margin-top:3px">Nivel '+u.level+' activo</div></div></div>'
     +'<div>'
     +'<div class="ben-grid">'
-    +bens.map(function(b){return '<div class="ben-card"><div class="ben-icon" style="background:'+b[1]+'">'+b[0]+'</div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.81rem;margin-bottom:3px">'+b[2]+'</div>'+pill(b[3],b[4])+'<div style="font-size:0.71rem;color:var(--muted);margin-top:5px;line-height:1.45">'+b[5]+'</div></div>';}).join('')
+    +bens.map(function(b){
+      var active=b[7];var action=b[6];
+      return '<div class="ben-card">'
+        +'<div class="ben-icon" style="background:'+b[1]+'">'+b[0]+'</div>'
+        +'<div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.81rem;margin-bottom:3px">'+b[2]+'</div>'
+        +pill(b[3],b[4])
+        +'<div style="font-size:0.71rem;color:var(--muted);margin-top:5px;line-height:1.45">'+b[5]+'</div>'
+        +'<button onclick="alert(\''+action+'\')" style="width:100%;margin-top:8px;padding:5px 0;border-radius:4px;border:1px solid '+(active?'var(--lime-dk)':'rgba(0,0,0,0.10)')+';font-family:Syne,sans-serif;font-weight:700;font-size:0.67rem;cursor:'+(active?'pointer':'default')+';background:'+(active?'var(--lime-bg)':'transparent')+';color:'+(active?'var(--lime-dk)':'var(--muted)')+'">'+action+'</button>'
+        +'</div>';
+    }).join('')
     +'</div></div></div></div></div>';
 }
 
