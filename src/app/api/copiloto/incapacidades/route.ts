@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       id_empleado, id_tipo_incapacidad, fecha_inicio, fecha_fin,
-      num_dias, folio_imss, descripcion, nombre_registra,
+      folio_imss, descripcion, nombre_registra,
     } = body
 
     if (!id_empleado || !id_tipo_incapacidad || !fecha_inicio || !fecha_fin) {
@@ -23,16 +23,17 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (num_dias !== undefined && num_dias <= 0) {
-      return NextResponse.json({ error: 'num_dias debe ser mayor a 0' }, { status: 400 })
-    }
+    const fi = new Date(fecha_inicio)
+    const ff = new Date(fecha_fin)
 
-    if (new Date(fecha_inicio) > new Date(fecha_fin)) {
+    if (fi > ff) {
       return NextResponse.json(
         { error: 'fecha_inicio no puede ser mayor que fecha_fin' },
         { status: 400 }
       )
     }
+
+    const dias_calculados = Math.round((ff.getTime() - fi.getTime()) / 86400000) + 1
 
     const emp = await sql`SELECT id_empleado FROM empleados WHERE id_empleado = ${id_empleado} LIMIT 1`
     if (emp.length === 0) {
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
         estatus, activo, fecha_creacion, fecha_actualizacion
       ) VALUES (
         ${id_empleado}, ${id_tipo_incapacidad}, ${fecha_inicio}, ${fecha_fin},
-        ${num_dias ?? null}, ${folio_imss ?? null}, ${descripcion ?? null}, ${nombre_registra ?? null},
+        ${dias_calculados}, ${folio_imss ?? null}, ${descripcion ?? null}, ${nombre_registra ?? null},
         'pendiente', 1, NOW(), NOW()
       )
       RETURNING *
