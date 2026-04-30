@@ -365,25 +365,25 @@ tr.me-row{background:#feffd6 !important}
 <div id="screen-app">
   <div class="app-body" style="min-height:100vh">
     <div class="sidebar" id="sidebar">
-      <div id="sidebar-nav"></div>
-      <div class="s-foot" style="flex-direction:column;gap:8px;align-items:stretch">
+      <div style="padding:0.6rem 0.75rem 0.4rem;border-bottom:1px solid rgba(208,223,0,0.10)">
+        <div style="font-size:0.52rem;color:rgba(208,223,0,0.45);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px;font-family:'Syne',sans-serif;font-weight:700">Vista</div>
+        <select id="role-switcher" onchange="ql(this.value)" style="width:100%;font-size:0.72rem;border:1px solid rgba(208,223,0,0.25);border-radius:5px;padding:5px 8px;color:#fff;background:#1a1d26;cursor:pointer;outline:none">
+          <option value="op-good">👷 Operador — score alto</option>
+          <option value="op-bad">👷 Operador — score bajo</option>
+          <option value="coord">🗂 Coordinador A</option>
+          <option value="coord2">🗂 Coordinador B</option>
+          <option value="gerente">📊 Gerente de zona</option>
+          <option value="dir">🏢 Dirección general</option>
+        </select>
+      </div>
+      <div id="sidebar-nav" style="flex:1;overflow-y:auto"></div>
+      <div class="s-foot" style="flex-direction:column;gap:6px;align-items:stretch">
         <div style="display:flex;align-items:center;gap:8px">
           <div class="s-av" id="s-av"></div>
           <div style="flex:1;min-width:0">
             <div style="font-size:0.76rem;color:rgba(255,255,255,0.62);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="s-name"></div>
             <div style="font-size:0.61rem;color:rgba(255,255,255,0.28)" id="s-role"></div>
           </div>
-        </div>
-        <div>
-          <div style="font-size:0.55rem;color:rgba(15,17,23,0.38);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;font-family:'Syne',sans-serif;font-weight:700">Vista</div>
-          <select id="role-switcher" onchange="ql(this.value)" style="width:100%;font-size:0.71rem;border:1px solid rgba(15,17,23,0.14);border-radius:6px;padding:5px 8px;color:#0f1117;background:#fff;cursor:pointer;outline:none">
-            <option value="dir">Dirección general</option>
-            <option value="gerente">Gerente de zona</option>
-            <option value="coord">Coordinador A</option>
-            <option value="coord2">Coordinador B</option>
-            <option value="op-good">Operador — score alto</option>
-            <option value="op-bad">Operador — score bajo</option>
-          </select>
         </div>
       </div>
     </div>
@@ -1358,11 +1358,12 @@ function mapStatus(s){return s==='ok'?'Al corriente':s==='warn'||s==='risk'?'Pen
 async function nexoInit(){
   var u=null;
   try{u=JSON.parse(localStorage.getItem('nexo_user'));}catch(e){}
-  var role='dir';
+  var role='op-good';
   if(u){
     if(u.rolCode==='C') role='coord';
     else if(u.rolCode==='JT') role='gerente';
-    var ini=u.nombre.split(' ').filter(Boolean).slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
+    else if(u.rolCode==='ADMIN') role='dir';
+    var ini=(u.nombre||'').split(' ').filter(Boolean).slice(0,2).map(function(w){return w[0];}).join('').toUpperCase()||'?';
     USERS[role]=Object.assign({},USERS[role],{name:u.nombre,role:u.rol||USERS[role].role,ini:ini,bg:'#0f1117',clr:'#c8e000',coordId:'__NEXO__'});
     if(u.nomina&&(role==='coord'||role==='gerente')){
       try{
