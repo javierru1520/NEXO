@@ -71,7 +71,7 @@ const navGroups: NavGroup[] = [
   {
     label: 'Operaciones',
     items: [
-      { label: 'Airbag',    href: '/lipu',       icon: Bus },
+      { label: 'Rewards',   href: '/lipu',       icon: Bus },
       { label: 'Legal',     href: '/legal',      icon: Scale },
       { label: 'Asistencia', href: '/asistencia', icon: ClipboardCheck },
     ],
