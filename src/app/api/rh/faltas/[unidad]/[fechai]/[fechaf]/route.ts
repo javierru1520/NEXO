@@ -88,10 +88,7 @@ export async function GET(
     const faltasBustrax = await fetchAllBustraxFaltas(fechai, fechaf)
 
     if (faltasBustrax.length === 0) {
-      return NextResponse.json({
-        unidad, unidad_negocio: unidad_negocio_nombre, fechai, fechaf,
-        total: 0, excluidos: { vacaciones: 0, incapacidades: 0 }, faltas: [],
-      })
+      return NextResponse.json([])
     }
 
     const nominas = faltasBustrax.map(f => f.noEmpleado)
@@ -115,10 +112,7 @@ export async function GET(
     `
 
     if (empleados.length === 0) {
-      return NextResponse.json({
-        unidad, unidad_negocio: unidad_negocio_nombre, fechai, fechaf,
-        total: 0, excluidos: { vacaciones: 0, incapacidades: 0 }, faltas: [],
-      })
+      return NextResponse.json([])
     }
 
     const idEmpleados = empleados.map(e => e.id_empleado)
@@ -157,18 +151,7 @@ export async function GET(
         }
       })
 
-    return NextResponse.json({
-      unidad,
-      unidad_negocio: unidad_negocio_nombre,
-      fechai,
-      fechaf,
-      total: faltas.length,
-      excluidos: {
-        vacaciones:    excluirVac.size,
-        incapacidades: excluirInc.size,
-      },
-      faltas,
-    })
+    return NextResponse.json(faltas)
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Error interno'
     return NextResponse.json({ error: msg }, { status: 500 })

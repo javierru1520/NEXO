@@ -58,7 +58,7 @@ export async function GET(
       totalFaltas:   r.num_dias,
     }))
 
-    return NextResponse.json({ unidad, fechai, fechaf, total: incapacidades.length, incapacidades })
+    return NextResponse.json(incapacidades)
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Error interno'
     return NextResponse.json({ error: msg }, { status: 500 })
