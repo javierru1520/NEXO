@@ -147,18 +147,15 @@ export async function GET(
 
     const faltas = empleados
       .filter(emp => !excluirTodos.has(emp.id_empleado))
-      .map(emp => ({
-        id_empleado:      emp.id_empleado,
-        nomina:           emp.nomina,
-        rfc:              emp.rfc,
-        nombres:          emp.nombres,
-        apellido_paterno: emp.apellido_paterno,
-        apellido_materno: emp.apellido_materno,
-        unidad_negocio:   emp.unidad_negocio,
-        total_faltas:     parseInt(faltasMap.get(emp.nomina)?.totalFaltas ?? '0', 10),
-        fecha_inicio:     fechai,
-        fecha_fin:        fechaf,
-      }))
+      .map(emp => {
+        const b = faltasMap.get(emp.nomina)!
+        return {
+          keyidUn:       b.keyidUn,
+          unidadNegocio: b.unidadNegocio,
+          noEmpleado:    b.noEmpleado,
+          totalFaltas:   b.totalFaltas,
+        }
+      })
 
     return NextResponse.json({
       unidad,
