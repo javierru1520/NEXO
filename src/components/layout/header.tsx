@@ -15,6 +15,7 @@ export default function Header({ breadcrumb = 'Dashboard' }: HeaderProps) {
   const [userName, setUserName] = useState('Javier Ramírez')
   const [userEmail, setUserEmail] = useState('j.ramirez@traxion.com')
   const [userRol, setUserRol] = useState('')
+  const [userNomina, setUserNomina] = useState('')
   const [pendingCount, setPendingCount] = useState(0)
   const router = useRouter()
 
@@ -39,6 +40,7 @@ export default function Header({ breadcrumb = 'Dashboard' }: HeaderProps) {
         if (u.nombre) setUserName(u.nombre)
         if (u.email) setUserEmail(u.email)
         if (u.rol) setUserRol(u.rol)
+        if (u.nomina) setUserNomina(u.nomina)
         rolCode = u.rolCode || ''
       } catch {}
     }
@@ -184,7 +186,9 @@ export default function Header({ breadcrumb = 'Dashboard' }: HeaderProps) {
           </div>
           <div className="hidden md:block text-left">
             <p className="text-xs font-semibold text-gray-800 leading-tight">{userName}</p>
-            <p className="text-[10px] text-gray-400">{userRol || 'Usuario'}</p>
+            <p className="text-[10px] text-gray-400">
+              {userRol || 'Usuario'}{userNomina ? ` · ${userNomina}` : ''}
+            </p>
           </div>
           <ChevronDown className="w-3 h-3 text-gray-400" />
         </button>
@@ -194,6 +198,7 @@ export default function Header({ breadcrumb = 'Dashboard' }: HeaderProps) {
             <div className="px-4 py-3 border-b border-gray-100">
               <p className="text-xs font-semibold text-gray-800">{userName}</p>
               <p className="text-[10px] text-gray-400 mt-0.5">{userEmail}</p>
+              {userNomina && <p className="text-[10px] text-gray-400">Nómina: {userNomina}</p>}
             </div>
             <div className="py-1">
               <button className="w-full flex items-center gap-3 px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
