@@ -1,7 +1,7 @@
 "use client"
 
-import { Bell, Search, ChevronDown, User, LogOut, Settings } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Bell, Search, ChevronDown, User, LogOut, Settings, Lock, Eye, EyeOff } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
@@ -17,6 +17,18 @@ export default function Header({ breadcrumb = 'Dashboard' }: HeaderProps) {
   const [userRol, setUserRol] = useState('')
   const [pendingCount, setPendingCount] = useState(0)
   const router = useRouter()
+
+  const [changePwOpen, setChangePwOpen] = useState(false)
+  const [pwActual, setPwActual] = useState('')
+  const [pwNueva, setPwNueva] = useState('')
+  const [pwConfirm, setPwConfirm] = useState('')
+  const [pwError, setPwError] = useState('')
+  const [pwSuccess, setPwSuccess] = useState(false)
+  const [pwLoading, setPwLoading] = useState(false)
+  const [showActual, setShowActual] = useState(false)
+  const [showNueva, setShowNueva] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const pwActualRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const stored = localStorage.getItem('nexo_user')
@@ -43,6 +55,39 @@ export default function Header({ breadcrumb = 'Dashboard' }: HeaderProps) {
       } catch {}
     }
   }, [])
+
+  const openChangePw = () => {
+    setUserOpen(false)
+    setPwActual(''); setPwNueva(''); setPwConfirm('')
+    setPwError(''); setPwSuccess(false)
+    setChangePwOpen(true)
+    setTimeout(() => pwActualRef.current?.focus(), 100)
+  }
+
+  const handleChangePw = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPwError('')
+    if (!pwActual || !pwNueva || !pwConfirm) { setPwError('Todos los campos son requeridos.'); return }
+    if (pwNueva.length < 6) { setPwError('La nueva contraseña debe tener al menos 6 caracteres.'); return }
+    if (pwNueva !== pwConfirm) { setPwError('Las contraseñas nuevas no coinciden.'); return }
+    if (pwNueva === pwActual) { setPwError('La nueva contraseña debe ser diferente a la actual.'); return }
+    setPwLoading(true)
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo: userEmail, contrasenaActual: pwActual, contrasenaNueva: pwNueva }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setPwError(data.error || 'Error al cambiar contraseña.'); return }
+      setPwSuccess(true)
+      setTimeout(() => setChangePwOpen(false), 2000)
+    } catch {
+      setPwError('Error de conexión. Intenta de nuevo.')
+    } finally {
+      setPwLoading(false)
+    }
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('nexo_auth')
@@ -155,6 +200,13 @@ export default function Header({ breadcrumb = 'Dashboard' }: HeaderProps) {
                 <User className="w-3.5 h-3.5 text-gray-400" />
                 Mi perfil
               </button>
+              <button
+                onClick={openChangePw}
+                className="w-full flex items-center gap-3 px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <Lock className="w-3.5 h-3.5 text-gray-400" />
+                Cambiar contraseña
+              </button>
               <button className="w-full flex items-center gap-3 px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
                 <Settings className="w-3.5 h-3.5 text-gray-400" />
                 Configuración
@@ -179,6 +231,103 @@ export default function Header({ breadcrumb = 'Dashboard' }: HeaderProps) {
           className="fixed inset-0 z-40"
           onClick={() => { setNotifOpen(false); setUserOpen(false) }}
         />
+      )}
+
+      {/* Modal cambiar contraseña */}
+      {changePwOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => !pwLoading && setChangePwOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">Cambiar contraseña</h2>
+            <p className="text-xs text-gray-400 mb-5">Ingresa tu contraseña actual y elige una nueva.</p>
+
+            {pwSuccess ? (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-green-600" />
+                </div>
+                <p className="text-sm font-medium text-green-700">¡Contraseña actualizada!</p>
+              </div>
+            ) : (
+              <form onSubmit={handleChangePw} className="flex flex-col gap-4">
+                {/* Contraseña actual */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-gray-700">Contraseña actual</label>
+                  <div className="relative">
+                    <input
+                      ref={pwActualRef}
+                      type={showActual ? 'text' : 'password'}
+                      value={pwActual}
+                      onChange={e => setPwActual(e.target.value)}
+                      className="w-full pr-9 pl-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c8e000]/40 focus:border-[#a0b800]"
+                      placeholder="••••••••"
+                      disabled={pwLoading}
+                    />
+                    <button type="button" onClick={() => setShowActual(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      {showActual ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Nueva contraseña */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-gray-700">Nueva contraseña</label>
+                  <div className="relative">
+                    <input
+                      type={showNueva ? 'text' : 'password'}
+                      value={pwNueva}
+                      onChange={e => setPwNueva(e.target.value)}
+                      className="w-full pr-9 pl-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c8e000]/40 focus:border-[#a0b800]"
+                      placeholder="Mínimo 6 caracteres"
+                      disabled={pwLoading}
+                    />
+                    <button type="button" onClick={() => setShowNueva(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      {showNueva ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirmar nueva contraseña */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-gray-700">Confirmar nueva contraseña</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirm ? 'text' : 'password'}
+                      value={pwConfirm}
+                      onChange={e => setPwConfirm(e.target.value)}
+                      className="w-full pr-9 pl-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c8e000]/40 focus:border-[#a0b800]"
+                      placeholder="Repite la nueva contraseña"
+                      disabled={pwLoading}
+                    />
+                    <button type="button" onClick={() => setShowConfirm(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      {showConfirm ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {pwError && <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">{pwError}</p>}
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setChangePwOpen(false)}
+                    disabled={pwLoading}
+                    className="flex-1 py-2 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={pwLoading}
+                    className="flex-1 py-2 text-xs font-medium text-black bg-[#c8e000] hover:bg-[#b0c800] rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {pwLoading ? 'Guardando...' : 'Guardar'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
       )}
     </header>
   )

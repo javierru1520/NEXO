@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sql from '@/lib/db'
 
+const fmt = (d: Date | string) => new Date(d).toISOString().slice(0, 10)
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ unidad: string; fechai: string; fechaf: string }> }
@@ -17,16 +19,19 @@ export async function GET(
     const rows = unidades.length > 0
       ? await sql`
           SELECT
-            uun.id_unidad_negocio,
-            un.descripcion AS unidad_negocio,
-            COALESCE(e.nomina, u.nomina) AS nomina,
-            ei.num_dias
+            COALESCE(e.nomina, u.nomina)                                          AS nomina,
+            CONCAT_WS(' ', e.apellido_paterno, e.apellido_materno, e.nombres)     AS nombre,
+            ei.folio_imss                                                          AS folio,
+            ei.num_dias                                                            AS dias_ocupados,
+            ei.fecha_inicio,
+            ei.fecha_fin,
+            ti.descripcion                                                         AS concepto,
+            ei.descripcion                                                         AS detalle
           FROM empleados_incapacidades ei
           JOIN empleados e ON e.id_empleado = ei.id_empleado
           JOIN cat_tipos_incapacidad ti ON ti.id_tipo_incapacidad = ei.id_tipo_incapacidad
           LEFT JOIN usuarios u ON u.id_empleado = e.id_empleado AND u.activo = 1
           JOIN usuarios_unidades_negocio uun ON uun.id_usuario = u.id_usuario AND uun.activo = 1
-          JOIN unidades_negocios un ON un.id_unidad_negocio = uun.id_unidad_negocio
           WHERE ei.activo = 1
             AND ei.estatus = 'autorizado_jt'
             AND uun.id_unidad_negocio = ${unidades[0].id_unidad_negocio}
@@ -35,30 +40,35 @@ export async function GET(
           ORDER BY ei.fecha_inicio`
       : await sql`
           SELECT
-            uun.id_unidad_negocio,
-            un.descripcion AS unidad_negocio,
-            COALESCE(e.nomina, u.nomina) AS nomina,
-            ei.num_dias
+            COALESCE(e.nomina, u.nomina)                                          AS nomina,
+            CONCAT_WS(' ', e.apellido_paterno, e.apellido_materno, e.nombres)     AS nombre,
+            ei.folio_imss                                                          AS folio,
+            ei.num_dias                                                            AS dias_ocupados,
+            ei.fecha_inicio,
+            ei.fecha_fin,
+            ti.descripcion                                                         AS concepto,
+            ei.descripcion                                                         AS detalle
           FROM empleados_incapacidades ei
           JOIN empleados e ON e.id_empleado = ei.id_empleado
           JOIN cat_tipos_incapacidad ti ON ti.id_tipo_incapacidad = ei.id_tipo_incapacidad
           LEFT JOIN usuarios u ON u.id_empleado = e.id_empleado AND u.activo = 1
           JOIN usuarios_unidades_negocio uun ON uun.id_usuario = u.id_usuario AND uun.activo = 1
-          JOIN unidades_negocios un ON un.id_unidad_negocio = uun.id_unidad_negocio
           WHERE ei.activo = 1
             AND ei.estatus = 'autorizado_jt'
             AND ei.fecha_inicio <= ${fechaf}::date
             AND ei.fecha_fin    >= ${fechai}::date
           ORDER BY ei.fecha_inicio`
 
-    const incapacidades = rows.map(r => ({
-      keyidUn:       r.id_unidad_negocio,
-      unidadNegocio: r.unidad_negocio,
-      noEmpleado:    r.nomina,
-      totalFaltas:   r.num_dias,
-    }))
-
-    return NextResponse.json(incapacidades)
+    return NextResponse.json(rows.map(r => ({
+      nomina:             r.nomina,
+      nombre:             r.nombre,
+      folio:              r.folio,
+      diasOcupados:       r.dias_ocupados,
+      fInicioIncapacidad: fmt(r.fecha_inicio),
+      fFinIncapacidad:    fmt(r.fecha_fin),
+      concepto:           r.concepto,
+      detalle:            r.detalle,
+    })))
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Error interno'
     return NextResponse.json({ error: msg }, { status: 500 })
